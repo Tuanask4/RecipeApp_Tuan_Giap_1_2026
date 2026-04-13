@@ -50,6 +50,16 @@ dev_dependencies:
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.
+
+# Thư viện quản lý State
+  flutter_riverpod: ^2.5.1
+  
+  # Tạo ID ngẫu nhiên cho các object
+  uuid: ^4.3.3
+  
+  # Để load ảnh mạng mượt mà
+  cached_network_image: ^3.3.1
+  
 flutter:
 
   # The following line ensures that the Material Icons font is
