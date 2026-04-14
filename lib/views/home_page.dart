@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../viewmodels/recipe_provider.dart';
-import 'smart_pantry_page.dart';
+import '../widgets/home_search_bar.dart';
 import '../widgets/large_recipe_card.dart';
 import '../widgets/small_recipe_card.dart';
-
 
 class HomePage extends ConsumerWidget {
   final ScrollController scrollController;
@@ -13,199 +12,144 @@ class HomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // 1. Lấy dữ liệu Stream
     final recipesAsync = ref.watch(recipeListProvider);
 
-    return recipesAsync.when(
-      loading: () => const Scaffold(
-        backgroundColor: Colors.white,
-        body: Center(child: CircularProgressIndicator(color: Colors.orange)),
-      ),
-      error: (error, stackTrace) => Scaffold(
-        backgroundColor: Colors.white,
-        body: Center(
-          child: Text('Đã xảy ra lỗi:\n$error', textAlign: TextAlign.center),
+    return Scaffold(
+      backgroundColor: Colors.grey[50],
+      body: CustomScrollView(
+        controller: scrollController,
+        physics: const BouncingScrollPhysics(
+          parent: AlwaysScrollableScrollPhysics(),
         ),
-      ),
-      data: (recipes) {
-        return Scaffold(
-          backgroundColor: Colors.grey[50],
-          body: CustomScrollView(
-            controller: scrollController,
-            physics: const BouncingScrollPhysics(
-              parent: AlwaysScrollableScrollPhysics(),
-            ),
-            slivers: [
-              // ================= HEADER =================
-              SliverAppBar(
-                expandedHeight: 320.0,
-                pinned: true,
-                stretch: true,
-                toolbarHeight: 0,
-                elevation: 0,
-                backgroundColor: Colors.grey[50],
-                flexibleSpace: FlexibleSpaceBar(
-                  stretchModes: const [StretchMode.zoomBackground],
-                  background: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      Image.network(
-                        'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1000&auto=format&fit=crop',
-                        fit: BoxFit.cover,
-                      ),
-                      const DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.bottomCenter,
-                            end: Alignment.topCenter,
-                            colors: [Colors.black87, Colors.transparent],
-                          ),
-                        ),
-                      ),
-                      const Positioned(
-                        left: 20,
-                        bottom: 90,
-                        child: Text(
-                          'Món ngon hôm nay',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 22,
-                            shadows: [
-                              Shadow(color: Colors.black87, blurRadius: 8),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
+        slivers: [
+          // ================= LỚP 1: MÓNG NHÀ (HEADER & TÌM KIẾM) =================
+          SliverAppBar(
+            expandedHeight: 320.0,
+            pinned: true,
+            stretch: true,
+            toolbarHeight: 0,
+            elevation: 0,
+            backgroundColor: Colors.grey[50],
+            flexibleSpace: FlexibleSpaceBar(
+              stretchModes: const [StretchMode.zoomBackground],
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Image.network(
+                    'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1000&auto=format&fit=crop',
+                    fit: BoxFit.cover,
                   ),
-                ),
-                bottom: PreferredSize(
-                  preferredSize: const Size.fromHeight(70),
-                  child: Container(
-                    height: 70,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 10,
-                    ),
+                  const DecoratedBox(
                     decoration: BoxDecoration(
-                      color: Colors.grey[50],
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(24),
+                      gradient: LinearGradient(
+                        begin: Alignment.bottomCenter,
+                        end: Alignment.topCenter,
+                        colors: [Colors.black87, Colors.transparent],
                       ),
                     ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Container(
-                            height: 46,
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(24),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.04),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ],
-                            ),
-                            child: const TextField(
-                              decoration: InputDecoration(
-                                icon: Icon(
-                                  Icons.search,
-                                  color: Colors.orange,
-                                  size: 22,
-                                ),
-                                hintText: 'Tìm kiếm công thức...',
-                                border: InputBorder.none,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        GestureDetector(
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const SmartPantryPage(),
-                            ),
-                          ),
-                          child: Container(
-                            height: 46,
-                            width: 46,
-                            decoration: BoxDecoration(
-                              color: Colors.orange,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.orange.withOpacity(0.3),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.kitchen,
-                              color: Colors.white,
-                              size: 22,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
                   ),
-                ),
-              ),
-
-              // ================= NỘI DUNG =================
-              SliverToBoxAdapter(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 10),
-                    const SectionTitle(title: 'Nạp năng lượng sau tập 💪'),
-                    const SizedBox(height: 16),
-
-                    // Danh sách ngang
-                    SizedBox(
-                      height: 260,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        physics: const BouncingScrollPhysics(),
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        itemCount: recipes.length,
-                        itemBuilder: (context, index) {
-                          // TỐI ƯU: Gọi Class độc lập thay vì hàm
-                          return LargeRecipeCard(recipe: recipes[index]);
-                        },
+                  const Positioned(
+                    left: 20,
+                    bottom: 90,
+                    child: Text(
+                      'Món ngon hôm nay',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 22,
+                        shadows: [Shadow(color: Colors.black87, blurRadius: 8)],
                       ),
                     ),
-
-                    const SizedBox(height: 30),
-                    const SectionTitle(title: 'Khám phá hôm nay 🔥'),
-                    const SizedBox(height: 16),
-                  ],
-                ),
+                  ),
+                ],
               ),
-
-              // Danh sách dọc
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    // TỐI ƯU: Gọi Class độc lập
-                    (context, index) => SmallRecipeCard(recipe: recipes[index]),
-                    childCount: recipes.length,
+            ),
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(70),
+              child: Container(
+                height: 70,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(24),
                   ),
                 ),
+                child: const HomeSearchBar(),
               ),
-
-              const SliverToBoxAdapter(child: SizedBox(height: 100)),
-            ],
+            ),
           ),
-        );
-      },
+
+          // ================= LỚP 2: NỘI THẤT (THAY ĐỔI THEO TRẠNG THÁI) =================
+
+          // Trạng thái 1: Đang tải mạng (Chỉ hiện vòng xoay ở phần dưới, giữ nguyên Header)
+          if (recipesAsync.isLoading)
+            const SliverFillRemaining(
+              child: Center(
+                child: CircularProgressIndicator(color: Colors.orange),
+              ),
+            )
+          // Trạng thái 2: Lỗi mạng
+          else if (recipesAsync.hasError)
+            SliverFillRemaining(
+              child: Center(
+                child: Text('Đã xảy ra lỗi: ${recipesAsync.error}'),
+              ),
+            )
+          // Trạng thái 3: Tìm kiếm nhưng không có món nào khớp
+          else if (recipesAsync.value != null && recipesAsync.value!.isEmpty)
+            const SliverFillRemaining(
+              child: Center(
+                child: Text(
+                  'Không tìm thấy món ăn nào! 😢',
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                ),
+              ),
+            )
+          // Trạng thái 4: Tải thành công và có dữ liệu (Vẽ danh sách ra)
+          else if (recipesAsync.value != null) ...[
+            SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 10),
+                  const SectionTitle(title: 'Nạp năng lượng sau tập 💪'),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    height: 260,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      itemCount: recipesAsync.value!.length,
+                      itemBuilder: (context, index) =>
+                          LargeRecipeCard(recipe: recipesAsync.value![index]),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                  const SectionTitle(title: 'Khám phá hôm nay 🔥'),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) =>
+                      SmallRecipeCard(recipe: recipesAsync.value![index]),
+                  childCount: recipesAsync.value!.length,
+                ),
+              ),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 100)),
+          ],
+        ],
+      ),
     );
   }
 }
@@ -233,4 +177,3 @@ class SectionTitle extends StatelessWidget {
     );
   }
 }
-
