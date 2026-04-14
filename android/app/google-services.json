@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "407553345842",
+    "project_id": "recipeapp-e4fdc",
+    "storage_bucket": "recipeapp-e4fdc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:407553345842:android:dbb81b0c8af9cdaa0f6f2b",
+        "android_client_info": {
+          "package_name": "com.example.flutter_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDqhxLkH_ypGToQti2eEdMoTvYMxUerhTc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

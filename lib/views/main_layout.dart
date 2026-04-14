@@ -70,12 +70,13 @@ class _MainLayoutState extends State<MainLayout> {
 
       bottomNavigationBar: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
-        height: _isBottomNavVisible ? 80 : 0, // Thu hồi chiều cao khi ẩn
+        height: _isBottomNavVisible ? 65 : 0, // Thu hồi chiều cao khi ẩn
         child: Wrap(
           children: [
             BottomAppBar(
+              padding: EdgeInsets.zero,
               shape: const CircularNotchedRectangle(),
-              notchMargin: 8.0,
+              notchMargin: 6.0,
               color: Colors.white,
               child: SizedBox(
                 height: 60,
@@ -121,7 +122,7 @@ class _MainLayoutState extends State<MainLayout> {
             label,
             style: TextStyle(
               color: isSelected ? Colors.orange : Colors.grey,
-              fontSize: 12,
+              fontSize: 14,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             ),
           ),
