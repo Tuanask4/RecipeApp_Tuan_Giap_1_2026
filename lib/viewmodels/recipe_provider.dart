@@ -6,13 +6,15 @@ import '../models/recipe.dart';
 // 1. STREAM PROVIDER: LẮNG NGHE FIREBASE THỜI GIAN THỰC (REAL-TIME)
 // =======================================================================
 final recipeListProvider = StreamProvider<List<Recipe>>((ref) {
-  return FirebaseFirestore.instance.collection('recipes').snapshots().map((
-    snapshot,
-  ) {
-    return snapshot.docs
-        .map((doc) => Recipe.fromMap(doc.data(), doc.id))
-        .toList();
-  });
+  return FirebaseFirestore.instance
+      .collection('recipes')
+      .limit(20)
+      .snapshots()
+      .map((snapshot) {
+        return snapshot.docs
+            .map((doc) => Recipe.fromMap(doc.data(), doc.id))
+            .toList();
+      });
 });
 
 // =======================================================================
