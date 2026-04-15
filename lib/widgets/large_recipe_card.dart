@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/app_theme.dart';
 import '../models/recipe.dart';
 import '../views/recipe_detail_page.dart';
 import 'animated_scale_card.dart';
@@ -76,7 +77,7 @@ class LargeRecipeCard extends StatelessWidget {
                       const Icon(
                         Icons.schedule,
                         size: 16,
-                        color: Colors.orange,
+                        color: AppTheme.primary,
                       ),
                       const SizedBox(width: 4),
                       Text(
@@ -87,7 +88,7 @@ class LargeRecipeCard extends StatelessWidget {
                       const Icon(
                         Icons.local_fire_department,
                         size: 16,
-                        color: Colors.orange,
+                        color: AppTheme.primary,
                       ),
                       const SizedBox(width: 4),
                       Text(

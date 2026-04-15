@@ -11,7 +11,7 @@ class Ingredient {
     required this.unit,
   });
 
-  // Hàm tính toán khẩu phần (Dynamic Portion)
+  // Hàm tính toán khẩu phần
   Ingredient copyWithMultiplier(double multiplier) {
     return Ingredient(
       id: id,

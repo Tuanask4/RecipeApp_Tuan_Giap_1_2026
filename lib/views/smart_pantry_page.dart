@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../viewmodels/recipe_provider.dart';
+import '../core/app_theme.dart';
+import '../viewmodels/pantry_provider.dart';
 import '../widgets/animated_scale_card.dart';
 import 'recipe_detail_page.dart';
 
@@ -28,7 +29,7 @@ class _SmartPantryPageState extends ConsumerState<SmartPantryPage> {
     }).toList();
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
