@@ -5,6 +5,7 @@ import '../widgets/large_recipe_card.dart';
 import '../widgets/small_recipe_card.dart';
 import '../widgets/home_hero_header.dart';
 import '../core/app_theme.dart';
+import 'package:shimmer/shimmer.dart';
 
 class HomePage extends ConsumerWidget {
   final ScrollController scrollController;
@@ -25,9 +26,62 @@ class HomePage extends ConsumerWidget {
           const HomeHeroHeader(),
 
           recipesAsync.when(
-            loading: () => const SliverFillRemaining(
-              child: Center(
-                child: CircularProgressIndicator(color: AppTheme.primary),
+            loading: () => SliverFillRemaining(
+              child: Shimmer.fromColors(
+                baseColor: AppTheme.shimmerBase,
+                highlightColor: AppTheme.shimmerHighlight,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 10),
+                    // Giả lập tiêu đề
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 20),
+                      width: 200,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: AppTheme.radiusS,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // Giả lập danh sách cuộn ngang (Large Cards)
+                    SizedBox(
+                      height: 260,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: 3,
+                        itemBuilder: (_, __) => Container(
+                          width: 200,
+                          margin: const EdgeInsets.only(right: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: AppTheme.radiusL,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+                    // Giả lập danh sách dọc (Small Cards)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Column(
+                        children: List.generate(
+                          4,
+                          (index) => Container(
+                            height: 100,
+                            margin: const EdgeInsets.only(bottom: 16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: AppTheme.radiusM,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
             error: (err, stack) =>
@@ -35,7 +89,7 @@ class HomePage extends ConsumerWidget {
             data: (recipes) {
               if (recipes.isEmpty) {
                 return const SliverFillRemaining(
-                  child: Center(child: Text('Không tìm thấy món nào! 😢')),
+                  child: Center(child: Text('Không tìm thấy món nào')),
                 );
               }
               return SliverToBoxAdapter(

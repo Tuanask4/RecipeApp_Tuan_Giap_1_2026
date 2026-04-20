@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-
+import 'package:flutter_app/widgets/app_cached_image.dart';
 import '../models/recipe.dart';
 import '../views/recipe_detail_page.dart';
 import 'animated_scale_card.dart';
+import '../core/app_theme.dart'; // IMPORT THEME
 
 class SmallRecipeCard extends StatelessWidget {
   final Recipe recipe;
@@ -18,31 +19,24 @@ class SmallRecipeCard extends StatelessWidget {
         ),
       ),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 16.0),
+        margin: const EdgeInsets.only(bottom: AppTheme.spacingM),
         padding: const EdgeInsets.all(12.0),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.03),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          color: AppTheme.surface,
+          borderRadius: AppTheme.radiusM,
+          boxShadow: AppTheme.softShadow,
         ),
         child: Row(
           children: [
             ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.network(
-                recipe.imageUrl,
+              borderRadius: AppTheme.radiusS,
+              child: AppCachedImage(
+                imageUrl: recipe.imageUrl,
                 height: 80,
                 width: 80,
-                fit: BoxFit.cover,
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: AppTheme.spacingM),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -52,19 +46,21 @@ class SmallRecipeCard extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
+                      color: AppTheme.textDark,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppTheme.spacingS),
                   Row(
                     children: [
-                      const Icon(Icons.schedule, size: 14, color: Colors.grey),
+                      const Icon(
+                        Icons.schedule,
+                        size: 14,
+                        color: AppTheme.textLight,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         '${recipe.durationMinutes} phút',
-                        style: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 12,
-                        ),
+                        style: AppTheme.bodyText,
                       ),
                     ],
                   ),
@@ -72,7 +68,10 @@ class SmallRecipeCard extends StatelessWidget {
               ),
             ),
             IconButton(
-              icon: const Icon(Icons.favorite_border, color: Colors.grey),
+              icon: const Icon(
+                Icons.favorite_border,
+                color: AppTheme.textLight,
+              ),
               onPressed: () {},
             ),
           ],

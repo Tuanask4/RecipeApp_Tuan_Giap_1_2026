@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../core/app_theme.dart';
+import 'app_cached_image.dart';
 import 'home_search_bar.dart';
 
 class HomeHeroHeader extends StatelessWidget {
@@ -19,9 +20,9 @@ class HomeHeroHeader extends StatelessWidget {
         background: Stack(
           fit: StackFit.expand,
           children: [
-            Image.network(
-              'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1000&auto=format&fit=crop',
-              fit: BoxFit.cover,
+            AppCachedImage(
+              imageUrl:
+                  'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1000&auto=format&fit=crop',
             ),
             const DecoratedBox(
               decoration: BoxDecoration(

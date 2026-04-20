@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-
-import '../core/app_theme.dart';
+import 'package:flutter_app/widgets/app_cached_image.dart';
 import '../models/recipe.dart';
 import '../views/recipe_detail_page.dart';
 import 'animated_scale_card.dart';
+import '../core/app_theme.dart'; // IMPORT THEME
 
 class LargeRecipeCard extends StatelessWidget {
   final Recipe recipe;
@@ -31,47 +31,37 @@ class LargeRecipeCard extends StatelessWidget {
       ),
       child: Container(
         width: 200,
-        margin: const EdgeInsets.only(right: 16.0),
+        margin: const EdgeInsets.only(right: AppTheme.spacingM),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
-            ),
-          ],
+          color: AppTheme.surface,
+          borderRadius: AppTheme.radiusL,
+          boxShadow: AppTheme.softShadow,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ClipRRect(
               borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(20),
-              ),
-              child: Image.network(
-                recipe.imageUrl,
+                top: Radius.circular(24),
+              ), // Vừa khít với radiusL
+              child: AppCachedImage(
+                imageUrl: recipe.imageUrl,
                 height: 140,
                 width: double.infinity,
-                fit: BoxFit.cover,
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(12.0),
+              padding: const EdgeInsets.all(AppTheme.spacingM),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     recipe.title,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: AppTheme.heading2,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppTheme.spacingS),
                   Row(
                     children: [
                       const Icon(
@@ -82,9 +72,9 @@ class LargeRecipeCard extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text(
                         '${recipe.durationMinutes} phút',
-                        style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                        style: AppTheme.bodyText,
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: AppTheme.spacingS),
                       const Icon(
                         Icons.local_fire_department,
                         size: 16,
@@ -93,7 +83,7 @@ class LargeRecipeCard extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text(
                         _getDifficultyText(recipe.difficulty),
-                        style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                        style: AppTheme.bodyText,
                       ),
                     ],
                   ),

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../core/app_theme.dart';
 import '../viewmodels/recipe_provider.dart';
 import '../views/smart_pantry_page.dart';
+import '../core/app_theme.dart'; // IMPORT THEME
 
 class HomeSearchBar extends ConsumerWidget {
   const HomeSearchBar({super.key});
@@ -11,33 +11,30 @@ class HomeSearchBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Row(
       children: [
-        // 1. Ô Nhập liệu Tìm kiếm
+        // Ô TÌM KIẾM
         Expanded(
           child: Container(
             height: 46,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: AppTheme.searchBarDecoration,
+            padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingM),
+            decoration: BoxDecoration(
+              color: AppTheme.surface, // Dùng màu thẻ chuẩn
+              borderRadius: AppTheme.radiusL, // Bo góc lớn chuẩn
+              boxShadow: AppTheme.softShadow, // Đổ bóng mềm
+            ),
             child: TextField(
-              onChanged: (text) {
-                // Gọi thẳng Provider từ đây
-                ref.read(searchQueryProvider.notifier).onTextChanged(text);
-              },
+              onChanged: (text) =>
+                  ref.read(searchQueryProvider.notifier).onTextChanged(text),
               decoration: const InputDecoration(
-                icon: Icon(
-                  Icons.search,
-                  color: AppTheme.primary,
-                  size: 22,
-                ),
+                icon: Icon(Icons.search, color: AppTheme.primary, size: 22),
                 hintText: 'Tìm kiếm công thức...',
                 border: InputBorder.none,
               ),
             ),
           ),
         ),
+        const SizedBox(width: AppTheme.spacingS),
 
-        const SizedBox(width: 12),
-
-        // 2. Nút bấm Tủ Lạnh Thông Minh (Smart Pantry)
+        // NÚT TỦ LẠNH (SMART PANTRY)
         GestureDetector(
           onTap: () => Navigator.push(
             context,
@@ -47,15 +44,9 @@ class HomeSearchBar extends ConsumerWidget {
             height: 46,
             width: 46,
             decoration: BoxDecoration(
-              color: AppTheme.primary,
+              color: AppTheme.primary, // Màu cam thương hiệu
               shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: AppTheme.primary.withOpacity(0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
-                ),
-              ],
+              boxShadow: AppTheme.primaryShadow, // Đổ bóng cam phát sáng
             ),
             child: const Icon(Icons.kitchen, color: Colors.white, size: 22),
           ),

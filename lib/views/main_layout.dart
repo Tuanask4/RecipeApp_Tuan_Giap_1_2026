@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import '../core/app_theme.dart';
 import 'home_page.dart';
 
 class MainLayout extends StatefulWidget {
@@ -60,7 +61,7 @@ class _MainLayoutState extends State<MainLayout> {
         ),
         child: FloatingActionButton(
           onPressed: () => setState(() => _currentIndex = 1),
-          backgroundColor: Colors.orange,
+          backgroundColor: AppTheme.primary,
           shape: const CircleBorder(),
           elevation: 8,
           child: const Icon(Icons.add, color: Colors.white, size: 32),
