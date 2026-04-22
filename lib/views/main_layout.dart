@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import '../core/app_theme.dart';
 import 'home_page.dart';
+import 'recipe_form_page.dart';
 
 class MainLayout extends StatefulWidget {
   const MainLayout({super.key});
@@ -18,7 +19,7 @@ class _MainLayoutState extends State<MainLayout> {
   @override
   void initState() {
     super.initState();
-    // Khởi tạo controller và lắng nghe sự kiện cuộn
+    // Lắng nghe sự kiện cuộn để ẩn/hiện thanh điều hướng
     _scrollController = ScrollController();
     _scrollController.addListener(() {
       if (_scrollController.position.userScrollDirection ==
@@ -35,50 +36,66 @@ class _MainLayoutState extends State<MainLayout> {
 
   @override
   void dispose() {
-    _scrollController.dispose(); // Tránh rò rỉ bộ nhớ khi tắt app
+    _scrollController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Đưa danh sách màn hình vào trong build để có thể truyền được _scrollController
-    final List<Widget> screens = [
+    // Danh sách các trang dựa trên Index
+    final List<Widget> pages = [
       HomePage(scrollController: _scrollController),
-      const Center(child: Text('Màn hình Thêm công thức (Đang chờ Firebase)')),
-      const Center(child: Text('Màn hình Tài khoản (Đang chờ Firebase)')),
+      // Trang tài khoản (Tạm thời là Placeholder)
+      const Center(
+        child: Text(
+          'Trang Tài Khoản\\n(Đang xây dựng)',
+          textAlign: TextAlign.center,
+          style: AppTheme.heading2,
+        ),
+      ),
     ];
 
     return Scaffold(
-      body: screens[_currentIndex], // Hiển thị màn hình theo tab đang chọn
+      backgroundColor: AppTheme.background,
+      // Cho phép nội dung cuộn luồn xuống dưới thanh điều hướng trong suốt
+      extendBody: true,
 
-      floatingActionButton: AnimatedContainer(
+      // Nội dung chính
+      body: IndexedStack(index: _currentIndex == 0 ? 0 : 1, children: pages),
+
+      // ================= NÚT THÊM MỚI (FAB) =================
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: AnimatedScale(
+        scale: _isBottomNavVisible ? 1.0 : 0.0, // Ẩn/Hiện nút mượt mà
         duration: const Duration(milliseconds: 300),
-        // Thu nhỏ/Ẩn nút cộng khi cuộn xuống
-        transform: Matrix4.translationValues(
-          0,
-          _isBottomNavVisible ? 0 : 100,
-          0,
-        ),
         child: FloatingActionButton(
-          onPressed: () => setState(() => _currentIndex = 1),
-          backgroundColor: AppTheme.primary,
-          shape: const CircleBorder(),
-          elevation: 8,
+          backgroundColor: AppTheme.primary, // ĐỒNG BỘ THEME
+          elevation: 6,
+          shape: const CircleBorder(), // Nút hình tròn chuẩn Material 3
+          onPressed: () {
+            // Mở form thêm món mới
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const RecipeFormPage()),
+            );
+          },
           child: const Icon(Icons.add, color: Colors.white, size: 32),
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
 
+      // ================= THANH ĐIỀU HƯỚNG DƯỚI =================
       bottomNavigationBar: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
-        height: _isBottomNavVisible ? 65 : 0, // Thu hồi chiều cao khi ẩn
+        // Nếu cuộn xuống, chiều cao = 0 (giấu đi). Nếu cuộn lên, cao = 80 (hiện ra)
+        height: _isBottomNavVisible ? 80 : 0,
         child: Wrap(
           children: [
             BottomAppBar(
-              padding: EdgeInsets.zero,
-              shape: const CircularNotchedRectangle(),
-              notchMargin: 6.0,
-              color: Colors.white,
+              color: AppTheme.surface, // ĐỒNG BỘ THEME
+              elevation: 20,
+              notchMargin: 8.0, // Khoảng hở giữa nút FAB và thanh điều hướng
+              shape:
+                  const CircularNotchedRectangle(), // Đường khoét lõm cho nút FAB
               child: SizedBox(
                 height: 60,
                 child: Row(
@@ -89,7 +106,9 @@ class _MainLayoutState extends State<MainLayout> {
                       label: 'Trang chủ',
                       index: 0,
                     ),
-                    const SizedBox(width: 40),
+                    const SizedBox(
+                      width: 48,
+                    ), // Khoảng trống ở giữa nhường chỗ cho FAB
                     _buildNavItem(
                       icon: Icons.person_outline,
                       label: 'Tài khoản',
@@ -105,7 +124,7 @@ class _MainLayoutState extends State<MainLayout> {
     );
   }
 
-  // Hàm phụ trợ vẽ nút
+  // ================= HÀM VẼ NÚT ĐIỀU HƯỚNG =================
   Widget _buildNavItem({
     required IconData icon,
     required String label,
@@ -114,17 +133,26 @@ class _MainLayoutState extends State<MainLayout> {
     final isSelected = _currentIndex == index;
     return InkWell(
       onTap: () => setState(() => _currentIndex = index),
+      highlightColor: Colors.transparent, // Bỏ hiệu ứng nháy xám mặc định
+      splashColor: Colors.transparent,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: isSelected ? Colors.orange : Colors.grey, size: 28),
+          // ĐỒNG BỘ THEME CHO ICON
+          Icon(
+            icon,
+            color: isSelected ? AppTheme.primary : AppTheme.textLight,
+            size: 26,
+          ),
+          const SizedBox(height: 4),
+          // ĐỒNG BỘ THEME CHO CHỮ
           Text(
             label,
             style: TextStyle(
-              color: isSelected ? Colors.orange : Colors.grey,
-              fontSize: 14,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              color: isSelected ? AppTheme.primary : AppTheme.textLight,
+              fontSize: 12,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
             ),
           ),
         ],
