@@ -24,17 +24,11 @@ class AppCachedImage extends StatelessWidget {
       width: width,
       height: height,
       fit: fit,
-      // 1. KHI ĐANG TẢI: Hiện hiệu ứng nhấp nháy Shimmer
       placeholder: (context, url) => Shimmer.fromColors(
         baseColor: AppTheme.shimmerBase,
         highlightColor: AppTheme.shimmerHighlight,
-        child: Container(
-          width: width,
-          height: height,
-          color: Colors.white, // Cần có màu nền để Shimmer có thể nhấp nháy lên
-        ),
+        child: Container(width: width, height: height, color: Colors.white),
       ),
-      // 2. KHI LỖI MẠNG / LINK CHẾT: Hiện icon cảnh báo
       errorWidget: (context, url, error) => Container(
         width: width,
         height: height,
