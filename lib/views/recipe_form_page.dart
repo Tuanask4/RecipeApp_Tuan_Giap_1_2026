@@ -10,6 +10,13 @@ class IngControllers {
   final name = TextEditingController();
   final amount = TextEditingController();
   final unit = TextEditingController();
+
+  // FIX: Thêm hàm dispose để dọn dẹp bộ nhớ của riêng cụm controller này
+  void dispose() {
+    name.dispose();
+    amount.dispose();
+    unit.dispose();
+  }
 }
 
 class RecipeFormPage extends StatefulWidget {
@@ -66,6 +73,26 @@ class _RecipeFormPageState extends State<RecipeFormPage> {
   }
 
   // =======================================================================
+  // FIX: HÀM DỌN DẸP BỘ NHỚ KHI ĐÓNG TRANG (TRÁNH MEMORY LEAK)
+  // =======================================================================
+  @override
+  void dispose() {
+    _titleCtrl.dispose();
+    _imageCtrl.dispose();
+    _durationCtrl.dispose();
+    _servingsCtrl.dispose();
+
+    // Dọn dẹp toàn bộ controller trong danh sách động
+    for (var ctrl in _ingCtrls) {
+      ctrl.dispose();
+    }
+    for (var ctrl in _stepCtrls) {
+      ctrl.dispose();
+    }
+    super.dispose();
+  }
+
+  // =======================================================================
   // HÀM LƯU DỮ LIỆU LÊN FIREBASE
   // =======================================================================
   Future<void> _saveRecipe() async {
@@ -91,8 +118,12 @@ class _RecipeFormPageState extends State<RecipeFormPage> {
 
       // 3. Xác định tài liệu trên Firebase
       final docRef = widget.existingRecipe == null
-          ? FirebaseFirestore.instance.collection('recipes').doc() // Thêm mới (Tự sinh ID)
-          : FirebaseFirestore.instance.collection('recipes').doc(widget.existingRecipe!.id); // Ghi đè ID cũ
+          ? FirebaseFirestore.instance
+                .collection('recipes')
+                .doc() // Thêm mới (Tự sinh ID)
+          : FirebaseFirestore.instance
+                .collection('recipes')
+                .doc(widget.existingRecipe!.id); // Lấy ID cũ
 
       // 4. Đóng gói thành Model
       final newRecipe = Recipe(
@@ -107,20 +138,27 @@ class _RecipeFormPageState extends State<RecipeFormPage> {
       );
 
       // 5. Bắn lên Mây 🚀
-      await docRef.set(newRecipe.toMap());
+      // FIX: Thêm SetOptions(merge: true) để an toàn hơn khi update dữ liệu
+      await docRef.set(newRecipe.toMap(), SetOptions(merge: true));
 
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(widget.existingRecipe == null ? 'Đã thêm thành công!' : 'Đã cập nhật thành công!'),
+            content: Text(
+              widget.existingRecipe == null
+                  ? 'Đã thêm thành công!'
+                  : 'Đã cập nhật thành công!',
+            ),
             backgroundColor: AppTheme.success,
           ),
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi: $e'), backgroundColor: AppTheme.error));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi: $e'), backgroundColor: AppTheme.error),
+        );
       }
     } finally {
       setState(() => _isLoading = false);
@@ -132,18 +170,31 @@ class _RecipeFormPageState extends State<RecipeFormPage> {
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
-        title: Text(widget.existingRecipe == null ? 'Thêm Món Mới' : 'Sửa Món Ăn', style: AppTheme.heading2),
+        title: Text(
+          widget.existingRecipe == null ? 'Thêm Món Mới' : 'Sửa Món Ăn',
+          style: AppTheme.heading2,
+        ),
         backgroundColor: AppTheme.background,
         elevation: 0,
         actions: [
           if (_isLoading)
-            const Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator(color: AppTheme.primary))
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: CircularProgressIndicator(color: AppTheme.primary),
+            )
           else
             TextButton.icon(
               onPressed: _saveRecipe,
               icon: const Icon(Icons.save, color: AppTheme.primary),
-              label: const Text('Lưu', style: TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold, fontSize: 16)),
-            )
+              label: const Text(
+                'Lưu',
+                style: TextStyle(
+                  color: AppTheme.primary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            ),
         ],
       ),
       body: Form(
@@ -160,17 +211,37 @@ class _RecipeFormPageState extends State<RecipeFormPage> {
             const SizedBox(height: AppTheme.spacingM),
             Row(
               children: [
-                Expanded(child: _buildTextField(_durationCtrl, 'Phút', Icons.schedule, isNumber: true)),
+                Expanded(
+                  child: _buildTextField(
+                    _durationCtrl,
+                    'Phút',
+                    Icons.schedule,
+                    isNumber: true,
+                  ),
+                ),
                 const SizedBox(width: AppTheme.spacingM),
-                Expanded(child: _buildTextField(_servingsCtrl, 'Số người', Icons.people, isNumber: true)),
+                Expanded(
+                  child: _buildTextField(
+                    _servingsCtrl,
+                    'Số người',
+                    Icons.people,
+                    isNumber: true,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: AppTheme.spacingM),
             DropdownButtonFormField<Difficulty>(
               value: _difficulty,
-              decoration: _inputDecoration('Độ khó', Icons.local_fire_department),
+              decoration: _inputDecoration(
+                'Độ khó',
+                Icons.local_fire_department,
+              ),
               items: Difficulty.values.map((d) {
-                return DropdownMenuItem(value: d, child: Text(d.name.toUpperCase()));
+                return DropdownMenuItem(
+                  value: d,
+                  child: Text(d.name.toUpperCase()),
+                );
               }).toList(),
               onChanged: (val) => setState(() => _difficulty = val!),
             ),
@@ -183,8 +254,9 @@ class _RecipeFormPageState extends State<RecipeFormPage> {
                 _buildSectionTitle('Nguyên liệu'),
                 IconButton(
                   icon: const Icon(Icons.add_circle, color: AppTheme.success),
-                  onPressed: () => setState(() => _ingCtrls.add(IngControllers())),
-                )
+                  onPressed: () =>
+                      setState(() => _ingCtrls.add(IngControllers())),
+                ),
               ],
             ),
             ..._ingCtrls.asMap().entries.map((entry) {
@@ -194,14 +266,37 @@ class _RecipeFormPageState extends State<RecipeFormPage> {
                 padding: const EdgeInsets.only(bottom: 8.0),
                 child: Row(
                   children: [
-                    Expanded(flex: 3, child: _buildTextField(ctrl.name, 'Tên', null)),
+                    Expanded(
+                      flex: 3,
+                      child: _buildTextField(ctrl.name, 'Tên', null),
+                    ),
                     const SizedBox(width: 8),
-                    Expanded(flex: 1, child: _buildTextField(ctrl.amount, 'SL', null, isNumber: true)),
+                    Expanded(
+                      flex: 1,
+                      child: _buildTextField(
+                        ctrl.amount,
+                        'SL',
+                        null,
+                        isNumber: true,
+                      ),
+                    ),
                     const SizedBox(width: 8),
-                    Expanded(flex: 1, child: _buildTextField(ctrl.unit, 'ĐV', null)),
+                    Expanded(
+                      flex: 1,
+                      child: _buildTextField(ctrl.unit, 'ĐV', null),
+                    ),
                     IconButton(
-                      icon: const Icon(Icons.remove_circle_outline, color: AppTheme.error),
-                      onPressed: () => setState(() => _ingCtrls.removeAt(idx)),
+                      icon: const Icon(
+                        Icons.remove_circle_outline,
+                        color: AppTheme.error,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          // FIX: Giải phóng bộ nhớ của ô text bị xóa trước khi gỡ khỏi list
+                          final removedCtrl = _ingCtrls.removeAt(idx);
+                          removedCtrl.dispose();
+                        });
+                      },
                     ),
                   ],
                 ),
@@ -216,8 +311,9 @@ class _RecipeFormPageState extends State<RecipeFormPage> {
                 _buildSectionTitle('Các bước làm'),
                 IconButton(
                   icon: const Icon(Icons.add_circle, color: AppTheme.success),
-                  onPressed: () => setState(() => _stepCtrls.add(TextEditingController())),
-                )
+                  onPressed: () =>
+                      setState(() => _stepCtrls.add(TextEditingController())),
+                ),
               ],
             ),
             ..._stepCtrls.asMap().entries.map((entry) {
@@ -230,19 +326,41 @@ class _RecipeFormPageState extends State<RecipeFormPage> {
                   children: [
                     Container(
                       margin: const EdgeInsets.only(top: 12),
-                      child: CircleAvatar(radius: 12, backgroundColor: AppTheme.primary, child: Text('${idx + 1}', style: const TextStyle(fontSize: 12, color: Colors.white))),
+                      child: CircleAvatar(
+                        radius: 12,
+                        backgroundColor: AppTheme.primary,
+                        child: Text(
+                          '${idx + 1}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: TextFormField(
                         controller: ctrl,
                         maxLines: 2,
-                        decoration: _inputDecoration('Mô tả bước ${idx + 1}', null),
+                        decoration: _inputDecoration(
+                          'Mô tả bước ${idx + 1}',
+                          null,
+                        ),
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.remove_circle_outline, color: AppTheme.error),
-                      onPressed: () => setState(() => _stepCtrls.removeAt(idx)),
+                      icon: const Icon(
+                        Icons.remove_circle_outline,
+                        color: AppTheme.error,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          // FIX: Giải phóng bộ nhớ của ô text bị xóa trước khi gỡ khỏi list
+                          final removedCtrl = _stepCtrls.removeAt(idx);
+                          removedCtrl.dispose();
+                        });
+                      },
                     ),
                   ],
                 ),
@@ -268,12 +386,20 @@ class _RecipeFormPageState extends State<RecipeFormPage> {
       prefixIcon: icon != null ? Icon(icon, color: AppTheme.primary) : null,
       filled: true,
       fillColor: AppTheme.surface,
-      border: OutlineInputBorder(borderRadius: AppTheme.radiusM, borderSide: BorderSide.none),
+      border: OutlineInputBorder(
+        borderRadius: AppTheme.radiusM,
+        borderSide: BorderSide.none,
+      ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
     );
   }
 
-  Widget _buildTextField(TextEditingController ctrl, String label, IconData? icon, {bool isNumber = false}) {
+  Widget _buildTextField(
+    TextEditingController ctrl,
+    String label,
+    IconData? icon, {
+    bool isNumber = false,
+  }) {
     return TextFormField(
       controller: ctrl,
       keyboardType: isNumber ? TextInputType.number : TextInputType.text,

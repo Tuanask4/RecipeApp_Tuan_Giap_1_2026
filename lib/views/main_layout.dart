@@ -19,7 +19,6 @@ class _MainLayoutState extends State<MainLayout> {
   @override
   void initState() {
     super.initState();
-    // Lắng nghe sự kiện cuộn để ẩn/hiện thanh điều hướng
     _scrollController = ScrollController();
     _scrollController.addListener(() {
       if (_scrollController.position.userScrollDirection ==
@@ -69,7 +68,7 @@ class _MainLayoutState extends State<MainLayout> {
         scale: _isBottomNavVisible ? 1.0 : 0.0, // Ẩn/Hiện nút mượt mà
         duration: const Duration(milliseconds: 300),
         child: FloatingActionButton(
-          backgroundColor: AppTheme.primary, // ĐỒNG BỘ THEME
+          backgroundColor: AppTheme.primary,
           elevation: 6,
           shape: const CircleBorder(), // Nút hình tròn chuẩn Material 3
           onPressed: () {
@@ -139,14 +138,12 @@ class _MainLayoutState extends State<MainLayout> {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // ĐỒNG BỘ THEME CHO ICON
           Icon(
             icon,
             color: isSelected ? AppTheme.primary : AppTheme.textLight,
             size: 26,
           ),
           const SizedBox(height: 4),
-          // ĐỒNG BỘ THEME CHO CHỮ
           Text(
             label,
             style: TextStyle(

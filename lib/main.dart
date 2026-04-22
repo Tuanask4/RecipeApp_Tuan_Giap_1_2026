@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import 'core/app_theme.dart'; // IMPORT THEME
+import 'core/app_theme.dart';
 import 'views/main_layout.dart';
 
 void main() async {
