@@ -22,7 +22,7 @@ class Ingredient {
   }
 
   // =================================================================
-  // BỘ PHIÊN DỊCH 1: TỪ DART SANG FIREBASE (Ép nguyên liệu thành Map)
+  // BỘ PHIÊN DỊCH 1: TỪ DART SANG FIREBASE (Ép nguyên liệu thành Map).
   // =================================================================
   Map<String, dynamic> toMap() {
     return {
