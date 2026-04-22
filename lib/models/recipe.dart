@@ -10,7 +10,7 @@ class Recipe {
   final String imageUrl;
   final int durationMinutes; // Thời gian nấu
   final Difficulty difficulty;
-  final int defaultServings; // Khẩu phần mặc định (VD: 2 người)
+  final int defaultServings; // Khẩu phần mặc định
   final List<Ingredient> ingredients; // Danh sách nguyên liệu
   final List<String> steps; // Các bước thực hiện
 
