@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
-import '../models/recipe.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../models/recipe.dart';
 import '../core/app_theme.dart';
+import '../viewmodels/auth_provider.dart';
 import '../widgets/app_cached_image.dart';
 import 'recipe_form_page.dart';
 
-class RecipeDetailPage extends StatefulWidget {
+class RecipeDetailPage extends ConsumerStatefulWidget {
   final Recipe recipe;
   const RecipeDetailPage({super.key, required this.recipe});
 
   @override
-  State<RecipeDetailPage> createState() => _RecipeDetailPageState();
+  ConsumerState<RecipeDetailPage> createState() => _RecipeDetailPageState();
 }
 
-class _RecipeDetailPageState extends State<RecipeDetailPage> {
+class _RecipeDetailPageState extends ConsumerState<RecipeDetailPage> {
   late int _currentServings;
   final Set<String> _checkedIngredients = {};
   final Set<int> _completedSteps = {};
@@ -24,72 +26,66 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
     _currentServings = widget.recipe.defaultServings;
   }
 
-  // Hàm xử lý Xóa với Hộp thoại xác nhận
-  Future<void> _confirmDelete(BuildContext context, Recipe recipe) async {
+  // ===========================================================================
+  // PHÂN QUYỀN: Chỉ tác giả mới thấy nút Sửa và Xóa
+  // ===========================================================================
+  bool get _isOwner {
+    final uid = ref.read(currentUserProvider)?.uid;
+    // Fallback: nếu recipe cũ chưa có authorId thì không ai được sửa/xóa
+    return uid != null && widget.recipe.authorId.isNotEmpty &&
+        uid == widget.recipe.authorId;
+  }
+
+  // ===========================================================================
+  // XÓA công thức — chỉ owner mới gọi được hàm này
+  // ===========================================================================
+  Future<void> _confirmDelete() async {
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (ctx) => AlertDialog(
         backgroundColor: AppTheme.surface,
+        shape: RoundedRectangleBorder(borderRadius: AppTheme.radiusM),
         title: const Text('Xóa công thức?', style: AppTheme.heading2),
         content: Text(
-          'Bạn có chắc chắn muốn xóa "${recipe.title}" không? Hành động này không thể hoàn tác.',
+          'Bạn có chắc muốn xóa "${widget.recipe.title}"?\nHành động này không thể hoàn tác.',
           style: AppTheme.bodyText,
         ),
-        shape: RoundedRectangleBorder(borderRadius: AppTheme.radiusM),
         actions: [
-          IconButton(
-             icon: Container(
-               padding: const EdgeInsets.all(8),
-               decoration: const BoxDecoration(color: Colors.black45, shape: BoxShape.circle),
-               child: const Icon(Icons.edit, color: Colors.white, size: 20),
-             ),
-             onPressed: () {
-               Navigator.push(
-                 context,
-                 MaterialPageRoute(
-                   // TRUYỀN DỮ LIỆU CŨ SANG ĐỂ FORM HIỂN THỊ
-                   builder: (context) => RecipeFormPage(existingRecipe: widget.recipe),
-                 ),
-               );
-             },
-           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text(
-              'Hủy',
-              style: TextStyle(color: AppTheme.textLight),
-            ),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Hủy',
+                style: TextStyle(color: AppTheme.textLight)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppTheme.error),
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text(
-              'Xóa ngay',
-              style: TextStyle(color: Colors.white),
-            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Xóa ngay',
+                style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
     );
 
-    if (confirm == true && context.mounted) {
+    if (confirm == true && mounted) {
       try {
         await FirebaseFirestore.instance
             .collection('recipes')
-            .doc(recipe.id)
+            .doc(widget.recipe.id)
             .delete();
-        if (context.mounted) {
+        if (mounted) {
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Đã xóa thành công "${recipe.title}"'),
+              content: Text('Đã xóa "${widget.recipe.title}"'),
               backgroundColor: AppTheme.success,
               behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: AppTheme.radiusM),
+              margin: const EdgeInsets.all(16),
             ),
           );
         }
       } catch (e) {
-        if (context.mounted) {
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Lỗi khi xóa: $e'),
@@ -101,44 +97,56 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
     }
   }
 
+  // ===========================================================================
+  // BUILD
+  // ===========================================================================
   @override
   Widget build(BuildContext context) {
     final double multiplier = _currentServings / widget.recipe.defaultServings;
 
     return Scaffold(
-      backgroundColor: AppTheme.background, // ĐỒNG BỘ THEME
+      backgroundColor: AppTheme.background,
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(
           parent: AlwaysScrollableScrollPhysics(),
         ),
         slivers: [
+          // ---- SLIVER APP BAR với ảnh hero ----
           SliverAppBar(
             expandedHeight: 340.0,
             pinned: true,
             stretch: true,
-            backgroundColor: AppTheme.background, // ĐỒNG BỘ THEME
-            iconTheme: const IconThemeData(
-              color: Colors.white,
-            ), // Đổi màu nút Back thành trắng cho dễ nhìn
-            // LẮP NÚT XÓA VÀO ĐÂY
-            actions: [
-              IconButton(
-                icon: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.black45,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.delete_outline,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
-                onPressed: () => _confirmDelete(context, widget.recipe),
-              ),
-              const SizedBox(width: 8),
-            ],
+            backgroundColor: AppTheme.background,
+            iconTheme: const IconThemeData(color: Colors.white),
+
+            // ===========================================================
+            // FIX: Nút Sửa và Xóa ở đây — chỉ hiện khi là owner
+            // Không còn nút Edit lạc trong delete dialog nữa
+            // ===========================================================
+            actions: _isOwner
+                ? [
+                    // Nút Sửa
+                    IconButton(
+                      tooltip: 'Sửa công thức',
+                      icon: _appBarIconButton(Icons.edit_outlined),
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => RecipeFormPage(
+                            existingRecipe: widget.recipe,
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Nút Xóa
+                    IconButton(
+                      tooltip: 'Xóa công thức',
+                      icon: _appBarIconButton(Icons.delete_outline),
+                      onPressed: _confirmDelete,
+                    ),
+                    const SizedBox(width: 4),
+                  ]
+                : null, // Người khác không thấy nút nào
 
             flexibleSpace: FlexibleSpaceBar(
               stretchModes: const [StretchMode.zoomBackground],
@@ -153,7 +161,6 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  // THAY BẰNG APP CACHED IMAGE
                   AppCachedImage(
                     imageUrl: widget.recipe.imageUrl,
                     fit: BoxFit.cover,
@@ -171,26 +178,63 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
               ),
             ),
           ),
+
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(24.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // --- Phần Nguyên liệu ---
+                  // ---- Tác giả ----
+                  if (widget.recipe.authorName.isNotEmpty &&
+                      widget.recipe.authorName != 'Ẩn danh')
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 20),
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 14,
+                            backgroundColor:
+                                AppTheme.primary.withOpacity(0.15),
+                            child: Text(
+                              widget.recipe.authorName[0].toUpperCase(),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.primary,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            widget.recipe.authorName,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.textDark,
+                            ),
+                          ),
+                          if (widget.recipe.createdAt != null) ...[
+                            const SizedBox(width: 8),
+                            Text(
+                              _formatDate(widget.recipe.createdAt!),
+                              style: AppTheme.bodyText,
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+
+                  // ---- Nguyên liệu ----
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text('Nguyên liệu', style: AppTheme.heading2),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 4,
-                          vertical: 2,
-                        ),
+                            horizontal: 4, vertical: 2),
                         decoration: BoxDecoration(
-                          color: AppTheme.primary.withOpacity(
-                            0.1,
-                          ), // ĐỒNG BỘ THEME
+                          color: AppTheme.primary.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(30),
                         ),
                         child: Row(
@@ -201,7 +245,8 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                                   ? AppTheme.primary
                                   : AppTheme.textLight,
                               onPressed: _currentServings > 1
-                                  ? () => setState(() => _currentServings--)
+                                  ? () =>
+                                      setState(() => _currentServings--)
                                   : null,
                             ),
                             Text(
@@ -213,7 +258,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                             ),
                             IconButton(
                               icon: const Icon(Icons.add, size: 18),
-                              color: AppTheme.primary, // ĐỒNG BỘ THEME
+                              color: AppTheme.primary,
                               onPressed: () =>
                                   setState(() => _currentServings++),
                             ),
@@ -225,12 +270,10 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                   const SizedBox(height: 16),
 
                   ...widget.recipe.ingredients.map((ingredient) {
-                    final dynamicIngredient = ingredient.copyWithMultiplier(
-                      multiplier,
-                    );
-                    final isChecked = _checkedIngredients.contains(
-                      ingredient.id,
-                    );
+                    final dynamicIngredient =
+                        ingredient.copyWithMultiplier(multiplier);
+                    final isChecked =
+                        _checkedIngredients.contains(ingredient.id);
 
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12.0),
@@ -250,7 +293,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                                   : Icons.check_box_outline_blank,
                               color: isChecked
                                   ? AppTheme.success
-                                  : AppTheme.textLight, // ĐỒNG BỘ THEME
+                                  : AppTheme.textLight,
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -290,7 +333,7 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
 
                   const SizedBox(height: 32),
 
-                  // --- Phần Cách làm ---
+                  // ---- Cách làm ----
                   const Text('Cách làm', style: AppTheme.heading2),
                   const SizedBox(height: 16),
 
@@ -321,14 +364,11 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
                                 shape: BoxShape.circle,
                                 color: isDone
                                     ? AppTheme.success
-                                    : AppTheme.primary, // ĐỒNG BỘ THEME
+                                    : AppTheme.primary,
                               ),
                               child: isDone
-                                  ? const Icon(
-                                      Icons.done,
-                                      color: Colors.white,
-                                      size: 16,
-                                    )
+                                  ? const Icon(Icons.done,
+                                      color: Colors.white, size: 16)
                                   : Text(
                                       '${idx + 1}',
                                       style: const TextStyle(
@@ -369,5 +409,31 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
         ],
       ),
     );
+  }
+
+  // ===========================================================================
+  // HELPER: Icon button có nền tối — dễ nhìn trên ảnh hero
+  // ===========================================================================
+  Widget _appBarIconButton(IconData icon) {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: const BoxDecoration(
+        color: Colors.black45,
+        shape: BoxShape.circle,
+      ),
+      child: Icon(icon, color: Colors.white, size: 20),
+    );
+  }
+
+  // ===========================================================================
+  // HELPER: Format ngày tháng thân thiện
+  // ===========================================================================
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final diff = now.difference(date);
+    if (diff.inDays == 0) return 'Hôm nay';
+    if (diff.inDays == 1) return 'Hôm qua';
+    if (diff.inDays < 7) return '${diff.inDays} ngày trước';
+    return '${date.day}/${date.month}/${date.year}';
   }
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/widgets/app_cached_image.dart';
+import '../widgets/app_cached_image.dart';
 import '../models/recipe.dart';
 import '../views/recipe_detail_page.dart';
 import 'animated_scale_card.dart';

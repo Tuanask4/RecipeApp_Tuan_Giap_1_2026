@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../models/recipe.dart';
 import '../models/ingredient.dart';
 import '../core/app_theme.dart';
+import '../viewmodels/auth_provider.dart';
 
 // Lớp hỗ trợ quản lý Controller cho Nguyên liệu
 class IngControllers {
@@ -19,15 +22,15 @@ class IngControllers {
   }
 }
 
-class RecipeFormPage extends StatefulWidget {
-  final Recipe? existingRecipe; // Nếu null => Thêm mới. Nếu có => Sửa.
+class RecipeFormPage extends ConsumerStatefulWidget {
+  final Recipe? existingRecipe;
   const RecipeFormPage({super.key, this.existingRecipe});
 
   @override
-  State<RecipeFormPage> createState() => _RecipeFormPageState();
+  ConsumerState<RecipeFormPage> createState() => _RecipeFormPageState();
 }
 
-class _RecipeFormPageState extends State<RecipeFormPage> {
+class _RecipeFormPageState extends ConsumerState<RecipeFormPage> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
 
@@ -92,18 +95,28 @@ class _RecipeFormPageState extends State<RecipeFormPage> {
     super.dispose();
   }
 
-  // =======================================================================
-  // HÀM LƯU DỮ LIỆU LÊN FIREBASE
-  // =======================================================================
   Future<void> _saveRecipe() async {
     if (!_formKey.currentState!.validate()) return;
+
+    // Kiểm tra user đã đăng nhập chưa trước khi làm bất cứ gì
+    final currentUser = ref.read(currentUserProvider);
+    if (currentUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Bạn cần đăng nhập để lưu công thức.'),
+          backgroundColor: AppTheme.error,
+        ),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
       // 1. Thu thập danh sách nguyên liệu
       List<Ingredient> finalIngredients = _ingCtrls.map((ctrl) {
         return Ingredient(
-          id: const Uuid().v4(), // Tạo ID ngẫu nhiên cho nguyên liệu
+          id: const Uuid().v4(),
           name: ctrl.name.text.trim(),
           amount: double.tryParse(ctrl.amount.text.trim()) ?? 1.0,
           unit: ctrl.unit.text.trim(),
@@ -116,16 +129,14 @@ class _RecipeFormPageState extends State<RecipeFormPage> {
           .where((text) => text.isNotEmpty)
           .toList();
 
-      // 3. Xác định tài liệu trên Firebase
+      // 3. Xác định document trên Firebase
       final docRef = widget.existingRecipe == null
-          ? FirebaseFirestore.instance
-                .collection('recipes')
-                .doc() // Thêm mới (Tự sinh ID)
+          ? FirebaseFirestore.instance.collection('recipes').doc()
           : FirebaseFirestore.instance
-                .collection('recipes')
-                .doc(widget.existingRecipe!.id); // Lấy ID cũ
+              .collection('recipes')
+              .doc(widget.existingRecipe!.id);
 
-      // 4. Đóng gói thành Model
+      // 4. Đóng gói thành Model — gắn authorId và authorName từ user hiện tại
       final newRecipe = Recipe(
         id: docRef.id,
         title: _titleCtrl.text.trim(),
@@ -135,10 +146,18 @@ class _RecipeFormPageState extends State<RecipeFormPage> {
         defaultServings: int.tryParse(_servingsCtrl.text.trim()) ?? 1,
         ingredients: finalIngredients,
         steps: finalSteps,
+        // ===========================================================
+        // Khi THÊM MỚI: gán user hiện tại làm tác giả
+        // Khi SỬA: giữ nguyên authorId gốc, không cho đổi chủ sở hữu
+        // ===========================================================
+        authorId: widget.existingRecipe?.authorId ?? currentUser.uid,
+        authorName: widget.existingRecipe?.authorName ??
+            (currentUser.displayName ?? 'Người dùng'),
+        createdAt: widget.existingRecipe?.createdAt, // null → serverTimestamp
+        isPublic: true,
       );
 
-      // 5. Bắn lên Mây 🚀
-      // FIX: Thêm SetOptions(merge: true) để an toàn hơn khi update dữ liệu
+      // 5. Lưu lên Firestore
       await docRef.set(newRecipe.toMap(), SetOptions(merge: true));
 
       if (mounted) {
@@ -147,21 +166,28 @@ class _RecipeFormPageState extends State<RecipeFormPage> {
           SnackBar(
             content: Text(
               widget.existingRecipe == null
-                  ? 'Đã thêm thành công!'
+                  ? 'Đã thêm công thức thành công!'
                   : 'Đã cập nhật thành công!',
             ),
             backgroundColor: AppTheme.success,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: AppTheme.radiusM),
+            margin: const EdgeInsets.all(16),
           ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi: $e'), backgroundColor: AppTheme.error),
+          SnackBar(
+            content: Text('Lỗi: $e'),
+            backgroundColor: AppTheme.error,
+            behavior: SnackBarBehavior.floating,
+          ),
         );
       }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 

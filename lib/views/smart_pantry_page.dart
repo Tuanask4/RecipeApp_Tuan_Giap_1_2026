@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/app_theme.dart';
 import '../viewmodels/pantry_provider.dart';
 import '../widgets/animated_scale_card.dart';
+import '../widgets/app_cached_image.dart';
 import 'recipe_detail_page.dart';
 
 // Đổi sang ConsumerStatefulWidget để quản lý text tìm kiếm nguyên liệu
@@ -38,6 +39,19 @@ class _SmartPantryPageState extends ConsumerState<SmartPantryPage> {
           'Tủ Lạnh Thông Minh',
           style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
         ),
+        actions: [
+          // Nút xóa toàn bộ nguyên liệu đã chọn
+          if (ref.watch(selectedIngredientsProvider).isNotEmpty)
+            TextButton.icon(
+              onPressed: () =>
+                  ref.read(selectedIngredientsProvider.notifier).clear(),
+              icon: const Icon(Icons.clear_all, size: 18, color: AppTheme.error),
+              label: const Text(
+                'Đặt lại',
+                style: TextStyle(color: AppTheme.error, fontSize: 13),
+              ),
+            ),
+        ],
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -107,20 +121,10 @@ class _SmartPantryPageState extends ConsumerState<SmartPantryPage> {
                                   ? FontWeight.bold
                                   : FontWeight.normal,
                             ),
-                            onSelected: (bool selected) {
-                              final notifier = ref.read(
-                                selectedIngredientsProvider.notifier,
-                              );
-                              final currentState = notifier.state;
-                              if (selected) {
-                                notifier.state = {
-                                  ...currentState,
-                                  ingredientName,
-                                };
-                              } else {
-                                notifier.state = {...currentState}
-                                  ..remove(ingredientName);
-                              }
+                            onSelected: (_) {
+                              ref
+                                  .read(selectedIngredientsProvider.notifier)
+                                  .toggle(ingredientName);
                             },
                           );
                         }).toList(),
@@ -198,12 +202,12 @@ class _SmartPantryPageState extends ConsumerState<SmartPantryPage> {
                                 borderRadius: const BorderRadius.horizontal(
                                   left: Radius.circular(16),
                                 ),
-                                child: Image.network(
-                                  recipe.imageUrl,
-                                  height: 100,
-                                  width: 100,
-                                  fit: BoxFit.cover,
-                                ),
+                                child: AppCachedImage(
+                                imageUrl: recipe.imageUrl,
+                                height: 100,
+                                width: 100,
+                                fit: BoxFit.cover,
+                              ),
                               ),
                               Expanded(
                                 child: Padding(

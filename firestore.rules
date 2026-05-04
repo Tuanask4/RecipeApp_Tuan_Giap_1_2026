@@ -1,0 +1,78 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // =========================================================================
+    // HELPER FUNCTIONS — tái sử dụng logic, tránh lặp code
+    // =========================================================================
+
+    // Kiểm tra người dùng đã đăng nhập
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Kiểm tra đây có phải chủ sở hữu document không
+    function isOwner(resource) {
+      return isSignedIn() && request.auth.uid == resource.data.authorId;
+    }
+
+    // Kiểm tra dữ liệu gửi lên có hợp lệ không (chống ghi rác)
+    function isValidRecipe() {
+      let data = request.resource.data;
+      return data.keys().hasAll(['title', 'authorId', 'isPublic'])
+          && data.title is string
+          && data.title.size() > 0
+          && data.title.size() <= 200
+          && data.authorId == request.auth.uid  // authorId phải khớp user hiện tại
+          && data.isPublic is bool;
+    }
+
+    // =========================================================================
+    // COLLECTION: recipes
+    // =========================================================================
+    match /recipes/{recipeId} {
+
+      // ĐỌC: Ai cũng đọc được công thức public
+      // Người chưa đăng nhập cũng xem được (browse không cần login)
+      allow read: if resource.data.isPublic == true
+                  || isOwner(resource);  // Tác giả luôn đọc được kể cả private
+
+      // TẠO MỚI: Phải đăng nhập + dữ liệu hợp lệ
+      allow create: if isSignedIn() && isValidRecipe();
+
+      // CẬP NHẬT: Chỉ tác giả, không được đổi authorId và createdAt
+      allow update: if isOwner(resource)
+                    && isValidRecipe()
+                    && request.resource.data.authorId == resource.data.authorId
+                    && request.resource.data.createdAt == resource.data.createdAt;
+
+      // XÓA: Chỉ tác giả
+      allow delete: if isOwner(resource);
+    }
+
+    // =========================================================================
+    // COLLECTION: users
+    // =========================================================================
+    match /users/{userId} {
+
+      // Đọc profile: chỉ bản thân (sau này khi có follow có thể mở rộng)
+      allow read: if isSignedIn() && request.auth.uid == userId;
+
+      // Tạo/cập nhật: chỉ bản thân, không được tự đặt role admin
+      allow create, update: if isSignedIn()
+                             && request.auth.uid == userId
+                             && !('role' in request.resource.data);
+
+      // Không ai được xóa user document (kể cả bản thân — dùng Firebase Console)
+      allow delete: if false;
+    }
+
+    // =========================================================================
+    // Mặc định: từ chối tất cả những gì không được liệt kê ở trên
+    // =========================================================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

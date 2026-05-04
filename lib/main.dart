@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'core/app_theme.dart';
+import 'viewmodels/auth_provider.dart';
+import 'views/auth_page.dart';
 import 'views/main_layout.dart';
 
 void main() async {
@@ -25,9 +27,39 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Recipe App',
       debugShowCheckedModeBanner: false,
-      // ÁP DỤNG THEME CHUẨN Ở ĐÂY
       theme: AppTheme.lightTheme,
-      home: const MainLayout(),
+      home: const AuthGate(),
+    );
+  }
+}
+
+// ===========================================================================
+// AUTH GATE: Lắng nghe authStateProvider, tự chuyển màn hình khi login/logout
+// Không cần Navigator.push thủ công ở bất kỳ đâu
+// ===========================================================================
+class AuthGate extends ConsumerWidget {
+  const AuthGate({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authStateProvider);
+
+    return authState.when(
+      // Đang kiểm tra trạng thái Auth lần đầu (cold start)
+      loading: () => const Scaffold(
+        backgroundColor: Color(0xFFFAFAFA),
+        body: Center(
+          child: CircularProgressIndicator(color: Colors.orange),
+        ),
+      ),
+
+      // Lỗi Firebase (hiếm gặp)
+      error: (_, __) => const AuthPage(),
+
+      data: (user) {
+        if (user != null) return const MainLayout(); // Đã đăng nhập → vào app
+        return const AuthPage();                      // Chưa đăng nhập → Auth
+      },
     );
   }
 }

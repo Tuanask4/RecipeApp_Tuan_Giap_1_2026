@@ -40,29 +40,33 @@ final searchQueryProvider = StateNotifierProvider<SearchNotifier, String>((
 // 2. STREAM PROVIDER: LẮNG NGHE FIREBASE THỜI GIAN THỰC
 // =======================================================================
 final recipeListProvider = StreamProvider<List<Recipe>>((ref) {
-  // Lấy từ khóa tìm kiếm hiện tại
   final query = ref.watch(searchQueryProvider);
-  var collection = FirebaseFirestore.instance.collection('recipes');
+  final collection = FirebaseFirestore.instance.collection('recipes');
 
   if (query.isEmpty) {
-    // KỊCH BẢN 1: KHÔNG TÌM KIẾM -> Tải 20 món mới nhất (Tối ưu chi phí)
-    return collection.limit(20).snapshots().map((snapshot) {
-      return snapshot.docs
-          .map((doc) => Recipe.fromMap(doc.data(), doc.id))
-          .toList();
-    });
-  } else {
-    // KỊCH BẢN 2: CÓ TÌM KIẾM -> Lọc trực tiếp trên Firebase
-    // Kỹ thuật gộp điều kiện của Firebase để tìm các món bắt đầu bằng từ khóa
+    // KỊCH BẢN 1: KHÔNG TÌM KIẾM
+    // orderBy createdAt descending → mới nhất luôn lên đầu, không nhảy lung tung
+    // isPublic == true → chỉ hiện công thức public trên feed cộng đồng
     return collection
+        .where('isPublic', isEqualTo: true)
+        .orderBy('createdAt', descending: true)
+        .limit(20)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => Recipe.fromMap(doc.data(), doc.id))
+            .toList());
+  } else {
+    // KỊCH BẢN 2: CÓ TÌM KIẾM
+    // Firestore không cho kết hợp orderBy với range query trên field khác
+    // nên bỏ orderBy khi search — kết quả search đã đủ ngắn để sort client-side
+    return collection
+        .where('isPublic', isEqualTo: true)
         .where('title', isGreaterThanOrEqualTo: query)
         .where('title', isLessThan: '$query\uf8ff')
         .snapshots()
-        .map((snapshot) {
-          return snapshot.docs
-              .map((doc) => Recipe.fromMap(doc.data(), doc.id))
-              .toList();
-        });
+        .map((snapshot) => snapshot.docs
+            .map((doc) => Recipe.fromMap(doc.data(), doc.id))
+            .toList());
   }
 });
 

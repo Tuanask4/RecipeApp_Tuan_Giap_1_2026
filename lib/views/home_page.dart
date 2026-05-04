@@ -153,7 +153,8 @@ class HomePage extends ConsumerWidget {
                             .toList(),
                       ),
                     ),
-                    const SizedBox(height: 100),
+                    const _HomeFooter(),
+                    const SizedBox(height: 24),
                   ],
                 ),
               );
@@ -161,6 +162,146 @@ class HomePage extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+// ===========================================================================
+// FOOTER: Thông tin sinh viên — đồng nhất với theme app
+// ===========================================================================
+class _HomeFooter extends StatelessWidget {
+  const _HomeFooter();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+      decoration: BoxDecoration(
+        color: AppTheme.surface,
+        borderRadius: AppTheme.radiusL,
+        boxShadow: AppTheme.softShadow,
+      ),
+      child: Column(
+        children: [
+          // Logo trường — icon sách + tên
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: AppTheme.primary.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.school_rounded,
+                  color: AppTheme.primary,
+                  size: 18,
+                ),
+              ),
+              const SizedBox(width: 10),
+              const Text(
+                'Phenikaa University',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textDark,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 14),
+          Divider(color: Colors.grey.shade100, thickness: 1, height: 1),
+          const SizedBox(height: 14),
+
+          // Sinh viên 1
+          _StudentRow(
+            index: '01',
+            name: 'Nguyễn Minh Tuấn',
+            studentId: '22010478',
+          ),
+          const SizedBox(height: 8),
+
+          // Sinh viên 2
+          _StudentRow(
+            index: '02',
+            name: 'Nguyễn Văn Giáp',
+            studentId: '22010369',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StudentRow extends StatelessWidget {
+  final String index;
+  final String name;
+  final String studentId;
+
+  const _StudentRow({
+    required this.index,
+    required this.name,
+    required this.studentId,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        // Số thứ tự — badge cam nhỏ
+        Container(
+          width: 24,
+          height: 24,
+          decoration: BoxDecoration(
+            color: AppTheme.primary.withOpacity(0.12),
+            shape: BoxShape.circle,
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            index,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.primary,
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+
+        // Tên sinh viên
+        Expanded(
+          child: Text(
+            name,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: AppTheme.textDark,
+            ),
+          ),
+        ),
+
+        // Mã sinh viên — pill xám
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: AppTheme.background,
+            borderRadius: BorderRadius.circular(99),
+          ),
+          child: Text(
+            studentId,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: AppTheme.textLight,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
