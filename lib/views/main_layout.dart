@@ -175,126 +175,347 @@ class _ProfileTab extends ConsumerWidget {
     final user = ref.watch(currentUserProvider);
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        title: const Text('Tài khoản', style: AppTheme.heading2),
-        backgroundColor: AppTheme.background,
-        elevation: 0,
+      backgroundColor: AppTheme.surface,
+      body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          SliverToBoxAdapter(child: _buildAboutBody(context, ref, user)),
+        ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(AppTheme.spacingM),
-        children: [
-          // ---- Avatar + Tên ----
-          Container(
-            padding: const EdgeInsets.all(AppTheme.spacingL),
-            decoration: BoxDecoration(
-              color: AppTheme.surface,
-              borderRadius: AppTheme.radiusL,
-              boxShadow: AppTheme.softShadow,
-            ),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 32,
-                  backgroundColor: AppTheme.primary.withOpacity(0.15),
-                  backgroundImage: user?.photoURL != null
-                      ? NetworkImage(user!.photoURL!)
-                      : null,
-                  child: user?.photoURL == null
-                      ? Text(
-                          (user?.displayName ?? 'U')[0].toUpperCase(),
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.primary,
-                          ),
-                        )
-                      : null,
-                ),
-                const SizedBox(width: AppTheme.spacingM),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        user?.displayName ?? 'Người dùng',
-                        style: AppTheme.heading2,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        user?.email ?? '',
-                        style: AppTheme.bodyText,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+    );
+  }
+
+  Widget _buildAboutBody(BuildContext context, WidgetRef ref, user) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // =========================================================
+        // PHẦN 1: HERO — căn giữa, text lớn + nút CTA
+        // Giống "We're farmers, purveyors, and eaters" của Figma
+        // =========================================================
+        Container(
+          padding: const EdgeInsets.fromLTRB(32, 80, 32, 60),
+          color: AppTheme.surface,
+          child: Column(
+            children: [
+              RichText(
+                textAlign: TextAlign.center,
+                text: TextSpan(
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textDark,
+                    height: 1.45,
+                    fontFamily: 'serif',
                   ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: AppTheme.spacingM),
-
-          // ---- Nút Đăng xuất ----
-          Container(
-            decoration: BoxDecoration(
-              color: AppTheme.surface,
-              borderRadius: AppTheme.radiusM,
-              boxShadow: AppTheme.softShadow,
-            ),
-            child: ListTile(
-              shape: RoundedRectangleBorder(borderRadius: AppTheme.radiusM),
-              leading: const Icon(Icons.logout, color: AppTheme.error),
-              title: const Text(
-                'Đăng xuất',
-                style: TextStyle(
-                  color: AppTheme.error,
-                  fontWeight: FontWeight.w600,
+                  children: [
+                    const TextSpan(text: 'Chúng tôi là những '),
+                    TextSpan(
+                      text: 'người nấu ăn',
+                      style: TextStyle(
+                        fontStyle: FontStyle.italic,
+                        color: AppTheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const TextSpan(text: ', '),
+                    const TextSpan(
+                      text: 'người chia sẻ',
+                      style: TextStyle(fontStyle: FontStyle.italic),
+                    ),
+                    const TextSpan(text: ', và '),
+                    const TextSpan(
+                      text: 'người yêu ẩm thực',
+                      style: TextStyle(fontStyle: FontStyle.italic),
+                    ),
+                    const TextSpan(text: ' Việt Nam.'),
+                  ],
                 ),
               ),
-              onTap: () async {
-                final confirm = await showDialog<bool>(
-                  context: context,
-                  builder: (ctx) => AlertDialog(
-                    backgroundColor: AppTheme.surface,
+              const SizedBox(height: 28),
+              // Nút CTA — giống "Browse our shop" của Figma
+              SizedBox(
+                width: 200,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primary,
                     shape: RoundedRectangleBorder(
                       borderRadius: AppTheme.radiusM,
                     ),
-                    title: const Text('Đăng xuất?', style: AppTheme.heading2),
-                    content: const Text(
-                      'Bạn sẽ cần đăng nhập lại để tiếp tục.',
-                      style: AppTheme.bodyText,
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(ctx, false),
-                        child: const Text(
-                          'Hủy',
-                          style: TextStyle(color: AppTheme.textLight),
-                        ),
-                      ),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.error,
-                        ),
-                        onPressed: () => Navigator.pop(ctx, true),
-                        child: const Text(
-                          'Đăng xuất',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ],
+                    elevation: 0,
                   ),
-                );
-                if (confirm == true) {
-                  await ref.read(authServiceProvider).signOut();
-                  // AuthGate sẽ tự chuyển về AuthPage
-                }
-              },
-            ),
+                  child: const Text(
+                    'Khám phá công thức',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+
+        // =========================================================
+        // PHẦN 2: IMAGE GRID — 2 ảnh song song từ Unsplash
+        // Giống layout ảnh rau củ trong Figma About
+        // =========================================================
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            children: [
+              // Ảnh trái — cao hơn một chút
+              Expanded(
+                flex: 5,
+                child: ClipRRect(
+                  borderRadius: AppTheme.radiusL,
+                  child: Image.network(
+                    'https://images.unsplash.com/photo-1543353071-873f17a7a088'
+                    '?w=600&auto=format&fit=crop',
+                    height: 240,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) =>
+                        Container(height: 240, color: Colors.grey.shade100),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Ảnh phải — có text caption bên dưới giống Figma
+              Expanded(
+                flex: 4,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ClipRRect(
+                      borderRadius: AppTheme.radiusL,
+                      child: Image.network(
+                        'https://images.unsplash.com/photo-1504674900247-0877df9cc836'
+                        '?w=600&auto=format&fit=crop',
+                        height: 180,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) =>
+                            Container(height: 180, color: Colors.grey.shade100),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    // Caption giống Figma "Central California —..."
+                    RichText(
+                      text: TextSpan(
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: AppTheme.textLight,
+                          height: 1.5,
+                        ),
+                        children: [
+                          TextSpan(
+                            text: 'Việt Nam',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.textDark.withOpacity(0.7),
+                            ),
+                          ),
+                          const TextSpan(
+                            text:
+                                ' — Nơi ẩm thực phong phú và đa dạng '
+                                'nhất Đông Nam Á.',
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 48),
+
+        // =========================================================
+        // PHẦN 3: WHAT WE BELIEVE — label trái + text phải
+        // Giống layout 2 cột của Figma About
+        // =========================================================
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Label bên trái — ALL CAPS nhỏ
+              const SizedBox(
+                width: 110,
+                child: Text(
+                  'WHAT WE\nBELIEVE',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textLight,
+                    letterSpacing: 1.2,
+                    height: 1.6,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Text dài bên phải
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Chúng tôi tin rằng mọi người đều có thể nấu ăn ngon. '
+                      'Không cần đầu bếp chuyên nghiệp — chỉ cần công thức đúng '
+                      'và một chút tình yêu với bếp núc.',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppTheme.textDark,
+                        height: 1.75,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Phở bò. Bún bò Huế. Bánh mì. Cơm tấm. Bánh xèo. '
+                      'Gỏi cuốn. Chả giò. Bò lúc lắc. Cá kho tộ. Canh chua. '
+                      'Thịt kho trứng. Mì Quảng. Bánh cuốn.',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: AppTheme.textLight,
+                        height: 1.85,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Chúng tôi đang quên gì không?\n\n'
+                      'Còn bún riêu. Bánh khọt. Hủ tiếu. Súp cua. Lẩu thái. '
+                      'Bò kho. Xôi gà. Bánh tét. Nem nướng. Cháo lòng. '
+                      'Và rất nhiều món ngon đang chờ bạn khám phá...',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: AppTheme.textLight,
+                        height: 1.85,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 48),
+        Divider(color: Colors.grey.shade200, height: 1),
+        const SizedBox(height: 20),
+
+        // ---- Đăng xuất + copyright ở cuối ----
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            children: [
+              // User info nhỏ gọn
+              if (user != null)
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 18,
+                      backgroundColor: AppTheme.primary.withOpacity(0.15),
+                      child: Text(
+                        (user.displayName ?? 'U')[0].toUpperCase(),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.primary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            user.displayName ?? '',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                              color: AppTheme.textDark,
+                            ),
+                          ),
+                          Text(
+                            user.email ?? '',
+                            style: AppTheme.bodyText.copyWith(fontSize: 12),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    TextButton.icon(
+                      onPressed: () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            backgroundColor: AppTheme.surface,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: AppTheme.radiusM,
+                            ),
+                            title: const Text(
+                              'Đăng xuất?',
+                              style: AppTheme.heading2,
+                            ),
+                            content: const Text(
+                              'Bạn sẽ cần đăng nhập lại để tiếp tục.',
+                              style: AppTheme.bodyText,
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx, false),
+                                child: const Text(
+                                  'Hủy',
+                                  style: TextStyle(color: AppTheme.textLight),
+                                ),
+                              ),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppTheme.error,
+                                ),
+                                onPressed: () => Navigator.pop(ctx, true),
+                                child: const Text(
+                                  'Đăng xuất',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (confirm == true) {
+                          await ref.read(authServiceProvider).signOut();
+                        }
+                      },
+                      icon: const Icon(
+                        Icons.logout,
+                        size: 16,
+                        color: AppTheme.error,
+                      ),
+                      label: const Text(
+                        'Đăng xuất',
+                        style: TextStyle(color: AppTheme.error, fontSize: 13),
+                      ),
+                    ),
+                  ],
+                ),
+
+              const SizedBox(height: 16),
+              Text(
+                '© 2026 Recipe App · Phenikaa University',
+                style: AppTheme.bodyText.copyWith(fontSize: 11),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 100),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
