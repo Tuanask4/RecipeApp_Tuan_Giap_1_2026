@@ -1,46 +1,51 @@
-<div align="center">
+# 🍳 Recipe App - Ứng Dụng Nấu Ăn Thông Minh
 
-# Recipe App
+Một ứng dụng di động đa nền tảng được xây dựng bằng **Flutter**, giúp người dùng dễ dàng tìm kiếm công thức nấu ăn, quản lý tủ lạnh thông minh (Smart Pantry) và chia sẻ công thức của riêng mình với cộng đồng.
 
-**Ứng dụng Quản lý Công thức & Tủ lạnh Thông minh**
-
-![Flutter](https://img.shields.io/badge/Flutter-02569B?style=flat-square&logo=flutter&logoColor=white)
-![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=flat-square&logo=firebase&logoColor=black)
-![Riverpod](https://img.shields.io/badge/Riverpod-1A2B3C?style=flat-square&logo=dart&logoColor=white)
-
-<p>
-  <i>Xây dựng trải nghiệm nấu nướng thông minh, tiện lợi và tối ưu hóa hiệu năng.</i>
-</p>
-
-</div>
+Dự án áp dụng kiến trúc **MVVM** chuẩn mực, kết hợp với **Provider** để quản lý trạng thái (State Management) và **Firebase** làm backend.
 
 ---
 
-## Tính năng nổi bật
+## ✨ Tính Năng Nổi Bật (Core Features)
 
--  **Real-time CRUD:** Thêm, sửa, xóa công thức với dữ liệu được đồng bộ ngay lập tức nhờ sức mạnh của Cloud Firestore.
--  **Debounced Search:** Công cụ tìm kiếm tối ưu, tự động trì hoãn 0.5s khi gõ để tiết kiệm băng thông và giảm tải cho Server.
--  **Smart Pantry (Tủ lạnh thông minh):** Thuật toán tự động đối chiếu nguyên liệu bạn đang có với cơ sở dữ liệu để đưa ra các gợi ý món ăn có tỷ lệ trùng khớp cao nhất.
-- 🛠 **Dynamic Form:** Hệ thống biểu mẫu nhập liệu linh hoạt, cho phép thêm không giới hạn nguyên liệu và các bước làm.
+*   🔐 **Xác thực người dùng (Authentication):** Đăng nhập/Đăng ký an toàn bảo mật.
+*   🏠 **Trang chủ trực quan:** Hiển thị nổi bật các công thức mới nhất, thanh tìm kiếm tiện lợi và phân mục rõ ràng.
+*   🧊 **Tủ Lạnh Thông Minh (Smart Pantry):** Gợi ý món ăn dựa trên những nguyên liệu người dùng đang có sẵn (tập trung vào nguyên liệu chính).
+*   📖 **Chi tiết công thức:** Giao diện trực quan, chia rõ nguyên liệu cần chuẩn bị và các bước thực hiện.
+*   📝 **Tạo công thức mới:** Form nhập liệu thân thiện, hỗ trợ tải ảnh món ăn lên hệ thống.
+*   🌐 **Cộng đồng (Community Feed):** Nơi người dùng lướt xem, tương tác và khám phá các công thức được chia sẻ từ những người dùng khác.
 
 ---
 
-## Công nghệ & Kiến trúc
+## 🛠 Tech Stack & Kiến trúc
 
-Dự án được phân lớp rõ ràng (MVVM) nhằm đảm bảo tính dễ bảo trì và mở rộng:
+*   **Framework:** [Flutter](https://flutter.dev/) (Dart)
+*   **Architecture:** MVVM (Model - View - ViewModel)
+*   **State Management:** Provider
+*   **Backend & Database:** Firebase (Authentication, Cloud Firestore, Cloud Storage)
+*   **Tối ưu UI/UX:** Caching hình ảnh (`app_cached_image`), hiệu ứng mượt mà (`animated_scale_card`).
 
-- **Framework:** Flutter (Dart)
-- **State Management:** Riverpod
-- **Backend:** Firebase (Core, Firestore, Auth)
-- **Utilities:** `uuid` (định danh), `cached_network_image` (tải ảnh), `shimmer` (hiệu ứng skeleton).
+---
 
-<details>
-<summary><b>📂 Xem cấu trúc thư mục</b></summary>
+## 📂 Cấu Trúc Thư Mục Dự Án (Project Structure)
 
+Dự án được quy hoạch khoa học trong thư mục `lib/` để dễ dàng bảo trì và mở rộng:
 ```text
 lib/
-├── core/           # Cấu hình lõi (AppTheme, màu sắc, font)
-├── models/         # Các lớp đối tượng dữ liệu (Recipe, Ingredient)
-├── viewmodels/     # Logic xử lý (PantryProvider, RecipeProvider)
-├── views/          # Màn hình giao diện (UI)
-└── widgets/        # Thành phần giao diện tái sử dụng (Components)
+│
+├── core/               # Chứa các cấu hình cốt lõi (VD: app_theme.dart)
+├── models/             # Định nghĩa cấu trúc dữ liệu (recipe, ingredient)
+├── services/           # Giao tiếp với API/Firebase (auth_service, image_upload_service)
+├── viewmodels/         # Logic nghiệp vụ & State Management (auth_provider, pantry_provider...)
+├── views/              # Giao diện ứng dụng (UI/Screens)
+│   ├── auth_page.dart
+│   ├── home_page.dart
+│   ├── main_layout.dart
+│   ├── recipe_detail_page.dart
+│   ├── recipe_form_page.dart
+│   ├── smart_pantry_page.dart
+│   └── community_feed_page.dart
+│
+├── widgets/            # Các UI Components dùng chung, tái sử dụng (Cards, SearchBar, Headers...)
+├── firebase_options.dart # Cấu hình môi trường Firebase
+└── main.dart           # Entry point của ứng dụng
