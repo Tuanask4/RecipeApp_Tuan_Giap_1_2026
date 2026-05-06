@@ -26,7 +26,6 @@ class HomePage extends ConsumerWidget {
           const HomeHeroHeader(),
 
           recipesAsync.when(
-            // GIAO DIỆN SHIMMER KHI ĐANG TẢI DỮ LIỆU
             loading: () => SliverToBoxAdapter(
               child: Shimmer.fromColors(
                 baseColor: AppTheme.shimmerBase,

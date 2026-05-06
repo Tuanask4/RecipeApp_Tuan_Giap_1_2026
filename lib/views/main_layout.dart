@@ -59,7 +59,6 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
         backgroundColor: AppTheme.background,
         extendBody: true,
 
-        // FIX: IndexedStack dùng đúng _currentIndex, không map tay nữa
         body: IndexedStack(index: _currentIndex, children: pages),
 
         // ================= FAB CỐ ĐỊNH GÓC PHẢI DƯỚi =================
@@ -74,11 +73,11 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
                 child: Container(
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    boxShadow: AppTheme.primaryShadow, // Cam phát sáng
+                    boxShadow: AppTheme.primaryShadow,
                   ),
                   child: FloatingActionButton(
                     backgroundColor: AppTheme.primary,
-                    elevation: 0, // Shadow đã do Container lo
+                    elevation: 0,
                     shape: const CircleBorder(),
                     onPressed: () => Navigator.push(
                       context,
@@ -98,7 +97,6 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
               BottomAppBar(
                 color: AppTheme.surface,
                 elevation: 12,
-                // Bỏ notch — không còn FAB centerDocked nữa
                 child: SizedBox(
                   height: 60,
                   child: Row(
@@ -189,10 +187,6 @@ class _ProfileTab extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // =========================================================
-        // PHẦN 1: HERO — căn giữa, text lớn + nút CTA
-        // Giống "We're farmers, purveyors, and eaters" của Figma
-        // =========================================================
         Container(
           padding: const EdgeInsets.fromLTRB(32, 80, 32, 60),
           color: AppTheme.surface,
