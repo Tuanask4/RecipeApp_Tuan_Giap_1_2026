@@ -175,24 +175,27 @@ class _ContactSection extends StatefulWidget {
 }
 
 class _ContactSectionState extends State<_ContactSection> {
-  final _nameCtrl    = TextEditingController();
+  final _nameCtrl = TextEditingController();
   final _surnameCtrl = TextEditingController();
-  final _emailCtrl   = TextEditingController();
+  final _emailCtrl = TextEditingController();
   final _messageCtrl = TextEditingController();
-  bool _submitted    = false;
+  bool _submitted = false;
 
   @override
   void dispose() {
-    _nameCtrl.dispose(); _surnameCtrl.dispose();
-    _emailCtrl.dispose(); _messageCtrl.dispose();
+    _nameCtrl.dispose();
+    _surnameCtrl.dispose();
+    _emailCtrl.dispose();
+    _messageCtrl.dispose();
     super.dispose();
   }
 
   void _submit() {
     if (_nameCtrl.text.isEmpty || _emailCtrl.text.isEmpty) return;
     setState(() => _submitted = true);
-    Future.delayed(const Duration(seconds: 3),
-        () { if (mounted) setState(() => _submitted = false); });
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) setState(() => _submitted = false);
+    });
   }
 
   @override
@@ -227,9 +230,7 @@ class _ContactSectionState extends State<_ContactSection> {
               borderRadius: AppTheme.radiusL,
               boxShadow: AppTheme.softShadow,
             ),
-            child: _submitted
-                ? _buildSuccessState()
-                : _buildFormFields(),
+            child: _submitted ? _buildSuccessState() : _buildFormFields(),
           ),
 
           const SizedBox(height: 32),
@@ -246,14 +247,20 @@ class _ContactSectionState extends State<_ContactSection> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         // Name + Surname — 2 cột giống Figma
-        Row(children: [
-          Expanded(child: _field(_nameCtrl,    'Họ',   'Nguyễn')),
-          const SizedBox(width: 12),
-          Expanded(child: _field(_surnameCtrl, 'Tên',  'Minh Tuấn')),
-        ]),
+        Row(
+          children: [
+            Expanded(child: _field(_nameCtrl, 'Họ', 'Nguyễn')),
+            const SizedBox(width: 12),
+            Expanded(child: _field(_surnameCtrl, 'Tên', 'Minh Tuấn')),
+          ],
+        ),
         const SizedBox(height: 12),
-        _field(_emailCtrl, 'Email', 'email@example.com',
-            type: TextInputType.emailAddress),
+        _field(
+          _emailCtrl,
+          'Email',
+          'email@example.com',
+          type: TextInputType.emailAddress,
+        ),
         const SizedBox(height: 12),
         // Message — multi-line
         TextField(
@@ -293,11 +300,14 @@ class _ContactSectionState extends State<_ContactSection> {
         children: [
           Text('✅', style: TextStyle(fontSize: 48)),
           SizedBox(height: 12),
-          Text('Đã gửi thành công!',
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textDark)),
+          Text(
+            'Đã gửi thành công!',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.textDark,
+            ),
+          ),
           SizedBox(height: 4),
           Text('Cảm ơn bạn đã góp ý 🙏', style: AppTheme.bodyText),
         ],
@@ -315,20 +325,27 @@ class _ContactSectionState extends State<_ContactSection> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 36, height: 36,
+              width: 36,
+              height: 36,
               decoration: BoxDecoration(
                 color: AppTheme.primary.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.school_rounded,
-                  color: AppTheme.primary, size: 20),
+              child: const Icon(
+                Icons.school_rounded,
+                color: AppTheme.primary,
+                size: 20,
+              ),
             ),
             const SizedBox(width: 10),
-            const Text('Phenikaa University',
-                style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.textDark)),
+            const Text(
+              'Phenikaa University',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textDark,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 16),
@@ -354,7 +371,7 @@ class _ContactSectionState extends State<_ContactSection> {
               child: _footerColumn('Thành viên', [
                 'Nguyễn Minh Tuấn',
                 'MSSV: 22010478',
-                'Nguyễn Văn Giáp',
+                'Nguyễn Công Giáp',
                 'MSSV: 22010369',
               ]),
             ),
@@ -383,7 +400,8 @@ class _ContactSectionState extends State<_ContactSection> {
     return Tooltip(
       message: tooltip,
       child: Container(
-        width: 36, height: 36,
+        width: 36,
+        height: 36,
         decoration: BoxDecoration(
           color: AppTheme.background,
           shape: BoxShape.circle,
@@ -398,22 +416,31 @@ class _ContactSectionState extends State<_ContactSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title,
-            style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.textDark)),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.bold,
+            color: AppTheme.textDark,
+          ),
+        ),
         const SizedBox(height: 8),
-        ...items.map((item) => Padding(
-              padding: const EdgeInsets.only(bottom: 6),
-              child: Text(item, style: AppTheme.bodyText.copyWith(fontSize: 12)),
-            )),
+        ...items.map(
+          (item) => Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: Text(item, style: AppTheme.bodyText.copyWith(fontSize: 12)),
+          ),
+        ),
       ],
     );
   }
 
-  Widget _field(TextEditingController ctrl, String label, String hint,
-      {TextInputType type = TextInputType.text}) {
+  Widget _field(
+    TextEditingController ctrl,
+    String label,
+    String hint, {
+    TextInputType type = TextInputType.text,
+  }) {
     return TextField(
       controller: ctrl,
       keyboardType: type,
@@ -422,15 +449,16 @@ class _ContactSectionState extends State<_ContactSection> {
   }
 
   InputDecoration _deco(String label, String hint) => InputDecoration(
-        labelText: label,
-        hintText: hint,
-        filled: true,
-        fillColor: AppTheme.background,
-        border: OutlineInputBorder(
-            borderRadius: AppTheme.radiusM, borderSide: BorderSide.none),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      );
+    labelText: label,
+    hintText: hint,
+    filled: true,
+    fillColor: AppTheme.background,
+    border: OutlineInputBorder(
+      borderRadius: AppTheme.radiusM,
+      borderSide: BorderSide.none,
+    ),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+  );
 }
 
 class SectionTitle extends StatelessWidget {
@@ -438,7 +466,7 @@ class SectionTitle extends StatelessWidget {
   const SectionTitle({super.key, required this.title});
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Text(title, style: AppTheme.heading2),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 20),
+    child: Text(title, style: AppTheme.heading2),
+  );
 }
