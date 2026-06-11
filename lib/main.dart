@@ -48,9 +48,7 @@ class AuthGate extends ConsumerWidget {
       // Đang kiểm tra trạng thái Auth lần đầu (cold start)
       loading: () => const Scaffold(
         backgroundColor: Color(0xFFFAFAFA),
-        body: Center(
-          child: CircularProgressIndicator(color: Colors.orange),
-        ),
+        body: Center(child: CircularProgressIndicator(color: Colors.orange)),
       ),
 
       // Lỗi Firebase (hiếm gặp)
@@ -58,9 +56,8 @@ class AuthGate extends ConsumerWidget {
 
       data: (user) {
         if (user != null) return const MainLayout(); // Đã đăng nhập → vào app
-        return const AuthPage();                      // Chưa đăng nhập → Auth
+        return const AuthPage(); // Chưa đăng nhập → Auth
       },
     );
   }
 }
-

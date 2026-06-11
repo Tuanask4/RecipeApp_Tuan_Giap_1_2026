@@ -17,7 +17,10 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      return web;
+      throw UnsupportedError(
+        'DefaultFirebaseOptions have not been configured for web - '
+        'you can reconfigure this by running the FlutterFire CLI again.',
+      );
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -25,7 +28,10 @@ class DefaultFirebaseOptions {
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
-        return macos;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for macos - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.windows:
         return windows;
       case TargetPlatform.linux:
@@ -40,20 +46,12 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyASzGJdcAa5cac73TSSDjC1bO7bM1yr_3o',
-    appId: '1:407553345842:web:0426d56adb81910c0f6f2b',
-    messagingSenderId: '407553345842',
-    projectId: 'recipeapp-e4fdc',
-    authDomain: 'recipeapp-e4fdc.firebaseapp.com',
-    storageBucket: 'recipeapp-e4fdc.firebasestorage.app',
-  );
-
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDqhxLkH_ypGToQti2eEdMoTvYMxUerhTc',
     appId: '1:407553345842:android:dbb81b0c8af9cdaa0f6f2b',
     messagingSenderId: '407553345842',
     projectId: 'recipeapp-e4fdc',
+    databaseURL: 'https://recipeapp-e4fdc-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'recipeapp-e4fdc.firebasestorage.app',
   );
 
@@ -62,26 +60,19 @@ class DefaultFirebaseOptions {
     appId: '1:407553345842:ios:e276d935c94ae92e0f6f2b',
     messagingSenderId: '407553345842',
     projectId: 'recipeapp-e4fdc',
+    databaseURL: 'https://recipeapp-e4fdc-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'recipeapp-e4fdc.firebasestorage.app',
-    iosBundleId: 'com.example.flutterApp',
-  );
-
-  static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyArcWuZ82sXjxLNOIaLkE6PEImrjHa4LVk',
-    appId: '1:407553345842:ios:e276d935c94ae92e0f6f2b',
-    messagingSenderId: '407553345842',
-    projectId: 'recipeapp-e4fdc',
-    storageBucket: 'recipeapp-e4fdc.firebasestorage.app',
+    iosClientId: '407553345842-uehck3rhbc32kbnvr404mpnjn58irtp6.apps.googleusercontent.com',
     iosBundleId: 'com.example.flutterApp',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
     apiKey: 'AIzaSyASzGJdcAa5cac73TSSDjC1bO7bM1yr_3o',
-    appId: '1:407553345842:web:9b35980ee0b809840f6f2b',
+    appId: '1:407553345842:web:af294983421440fc0f6f2b',
     messagingSenderId: '407553345842',
     projectId: 'recipeapp-e4fdc',
     authDomain: 'recipeapp-e4fdc.firebaseapp.com',
+    databaseURL: 'https://recipeapp-e4fdc-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'recipeapp-e4fdc.firebasestorage.app',
   );
-
 }

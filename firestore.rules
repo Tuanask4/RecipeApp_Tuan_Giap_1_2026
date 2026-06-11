@@ -4,73 +4,72 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // =========================================================================
-    // HELPER FUNCTIONS — tái sử dụng logic, tránh lặp code
+    // HELPER FUNCTIONS — Tái sử dụng logic, bảo mật chặt chẽ
     // =========================================================================
 
-    // Kiểm tra người dùng đã đăng nhập
+    // Kiểm tra người dùng đã đăng nhập qua Firebase Auth
     function isSignedIn() {
       return request.auth != null;
     }
 
-    // Kiểm tra đây có phải chủ sở hữu document không
+    // Kiểm tra tài khoản hiện tại có phải chủ sở hữu dữ liệu không
     function isOwner(resource) {
       return isSignedIn() && request.auth.uid == resource.data.authorId;
     }
 
-    // Kiểm tra dữ liệu gửi lên có hợp lệ không (chống ghi rác)
+    // Kiểm tra dữ liệu đầu vào (Data Validation) - Chống bắn phá dữ liệu rác
     function isValidRecipe() {
       let data = request.resource.data;
-      return data.keys().hasAll(['title', 'authorId', 'isPublic'])
+      return data.keys().hasAll(['title', 'authorId', 'isPublic', 'imageUrl', 'searchKeywords'])
           && data.title is string
           && data.title.size() > 0
           && data.title.size() <= 200
-          && data.authorId == request.auth.uid  // authorId phải khớp user hiện tại
+          && data.imageUrl is string
+          && data.searchKeywords is list  // Ép buộc phải có mảng từ khóa viết thường để phục vụ tìm kiếm
+          && data.authorId == request.auth.uid  
           && data.isPublic is bool;
     }
 
     // =========================================================================
-    // COLLECTION: recipes
+    // COLLECTION: recipes (Công thức nấu ăn)
     // =========================================================================
     match /recipes/{recipeId} {
 
-      // ĐỌC: Ai cũng đọc được công thức public
-      // Người chưa đăng nhập cũng xem được (browse không cần login)
-      allow read: if resource.data.isPublic == true
-                  || isOwner(resource);  // Tác giả luôn đọc được kể cả private
+      // ĐỌC: Cộng đồng xem được món public, tác giả xem được cả món private của mình
+      allow read: if resource.data.isPublic == true || isOwner(resource);
 
-      // TẠO MỚI: Phải đăng nhập + dữ liệu hợp lệ
+      // TẠO MỚI: Phải đăng nhập và qua bộ lọc kiểm tra kiểu dữ liệu
       allow create: if isSignedIn() && isValidRecipe();
 
-      // CẬP NHẬT: Chỉ tác giả, không được đổi authorId và createdAt
+      // CẬP NHẬT: Chỉ tác giả được sửa, cấm đổi authorId, bảo vệ trường createdAt an toàn
       allow update: if isOwner(resource)
                     && isValidRecipe()
                     && request.resource.data.authorId == resource.data.authorId
-                    && request.resource.data.createdAt == resource.data.createdAt;
+                    // SỬA LỖI: Nếu dữ liệu cũ chưa có trường createdAt thì cho qua, có rồi thì ép giữ nguyên
+                    && (!('createdAt' in resource.data) || request.resource.data.createdAt == resource.data.createdAt);
 
-      // XÓA: Chỉ tác giả
+      // XÓA: Chỉ tác giả mới có quyền xóa bài của mình
       allow delete: if isOwner(resource);
     }
 
     // =========================================================================
-    // COLLECTION: users
+    // COLLECTION: users (Thông tin người dùng)
     // =========================================================================
     match /users/{userId} {
 
-      // Đọc profile: chỉ bản thân (sau này khi có follow có thể mở rộng)
-      allow read: if isSignedIn() && request.auth.uid == userId;
+      // SỬA LỖI UX: Bất kỳ ai đã đăng nhập đều đọc được thông tin (Tên, avatar) của tác giả món ăn
+      allow read: if isSignedIn();
 
-      // Tạo/cập nhật: chỉ bản thân, không được tự đặt role admin
+      // TẠO/CẬP NHẬT: Chỉ chính chủ tài khoản mới được quyền sửa thông tin cá nhân
       allow create, update: if isSignedIn()
-                             && request.auth.uid == userId
-                             && !('role' in request.resource.data);
+                            && request.auth.uid == userId
+                            && !('role' in request.resource.data); // Chặn client tự hack role lên admin
 
-      // Không ai được xóa user document (kể cả bản thân — dùng Firebase Console)
+      // Không cho phép xóa user document từ phía Client ứng dụng
       allow delete: if false;
     }
 
-    // =========================================================================
-    // Mặc định: từ chối tất cả những gì không được liệt kê ở trên
-    // =========================================================================
+    // Khóa toàn bộ các đường dẫn ngầm khác không được khai báo công khai
     match /{document=**} {
       allow read, write: if false;
     }

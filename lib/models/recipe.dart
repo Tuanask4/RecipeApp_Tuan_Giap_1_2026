@@ -24,6 +24,7 @@ class Recipe {
   final String authorName;
   final DateTime? createdAt;
   final bool isPublic;
+  final List<String> searchKeywords;
 
   Recipe({
     required this.id,
@@ -38,7 +39,30 @@ class Recipe {
     required this.authorName,
     this.createdAt,
     this.isPublic = true,
+    this.searchKeywords = const [],
   });
+
+  // HÀM TẠO TỪ KHÓA TỰ ĐỘNG
+  // Ví dụ: "Gà Kho" -> ["g", "gà", "k", "kh", "kho", "gà kho"]
+  static List<String> _generateKeywords(String title) {
+    List<String> keywords = [];
+    String lowerCaseText = title.toLowerCase().trim();
+
+    // Tạo prefix cho toàn bộ chuỗi
+    for (int i = 1; i <= lowerCaseText.length; i++) {
+      keywords.add(lowerCaseText.substring(0, i));
+    }
+    // Tạo prefix cho từng từ riêng lẻ (để gõ "Kho" vẫn ra "Gà Kho")
+    List<String> words = lowerCaseText.split(' ');
+    for (String word in words) {
+      if (word.isNotEmpty) {
+        for (int i = 1; i <= word.length; i++) {
+          keywords.add(word.substring(0, i));
+        }
+      }
+    }
+    return keywords.toSet().toList(); // Xóa các phần tử trùng lặp
+  }
 
   // =================================================================
   // BỘ PHIÊN DỊCH 1: TỪ DART SANG FIREBASE
@@ -56,8 +80,7 @@ class Recipe {
       'authorId': authorId,
       'authorName': authorName,
       'isPublic': isPublic,
-      // Dùng FieldValue.serverTimestamp() khi tạo mới (xem RecipeFormPage)
-      // Ở đây chỉ giữ nguyên giá trị cũ khi update
+      'searchKeywords': _generateKeywords(title),
       'createdAt': createdAt != null
           ? Timestamp.fromDate(createdAt!)
           : FieldValue.serverTimestamp(),
@@ -80,15 +103,16 @@ class Recipe {
       defaultServings: map['defaultServings']?.toInt() ?? 1,
       ingredients: map['ingredients'] != null
           ? List<Ingredient>.from(
-              map['ingredients'].map((x) => Ingredient.fromMap(x)))
+              map['ingredients'].map((x) => Ingredient.fromMap(x)),
+            )
           : [],
       steps: List<String>.from(map['steps'] ?? []),
       // Đọc authorId — fallback '' để tương thích với data cũ chưa có field này
       authorId: map['authorId'] ?? '',
       authorName: map['authorName'] ?? 'Ẩn danh',
       isPublic: map['isPublic'] ?? true,
-      // Firestore trả về Timestamp, cần convert sang DateTime
-      createdAt: (map['createdAt'] as Timestamp?)?.toDate(),
+      searchKeywords: List<String>.from(map['searchKeywords'] ?? []),
+      createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
 
@@ -114,9 +138,9 @@ class Recipe {
       defaultServings: defaultServings ?? this.defaultServings,
       ingredients: ingredients ?? this.ingredients,
       steps: steps ?? this.steps,
-      authorId: authorId,        // không cho đổi authorId
-      authorName: authorName,    // không cho đổi authorName
-      createdAt: createdAt,      // không cho đổi createdAt
+      authorId: authorId, // không cho đổi authorId
+      authorName: authorName, // không cho đổi authorName
+      createdAt: createdAt, // không cho đổi createdAt
       isPublic: isPublic ?? this.isPublic,
     );
   }

@@ -30,16 +30,15 @@ class SearchNotifier extends StateNotifier<String> {
 }
 
 // Khởi tạo Provider cho bộ tìm kiếm
-final searchQueryProvider = StateNotifierProvider<SearchNotifier, String>((
-  ref,
-) {
-  return SearchNotifier();
-});
+final searchQueryProvider =
+    StateNotifierProvider.autoDispose<SearchNotifier, String>((ref) {
+      return SearchNotifier();
+    });
 
 // =======================================================================
 // 2. STREAM PROVIDER: LẮNG NGHE FIREBASE THỜI GIAN THỰC
 // =======================================================================
-final recipeListProvider = StreamProvider<List<Recipe>>((ref) {
+final recipeListProvider = StreamProvider.autoDispose<List<Recipe>>((ref) {
   final query = ref.watch(searchQueryProvider);
   final collection = FirebaseFirestore.instance.collection('recipes');
 
@@ -52,21 +51,23 @@ final recipeListProvider = StreamProvider<List<Recipe>>((ref) {
         .orderBy('createdAt', descending: true)
         .limit(20)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => Recipe.fromMap(doc.data(), doc.id))
-            .toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => Recipe.fromMap(doc.data(), doc.id))
+              .toList(),
+        );
   } else {
     // KỊCH BẢN 2: CÓ TÌM KIẾM
     // Firestore không cho kết hợp orderBy với range query trên field khác
     // nên bỏ orderBy khi search — kết quả search đã đủ ngắn để sort client-side
     return collection
         .where('isPublic', isEqualTo: true)
-        .where('title', isGreaterThanOrEqualTo: query)
-        .where('title', isLessThan: '$query\uf8ff')
+        .where('searchKeywords', arrayContains: query.toLowerCase().trim())
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => Recipe.fromMap(doc.data(), doc.id))
-            .toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => Recipe.fromMap(doc.data(), doc.id))
+              .toList(),
+        );
   }
 });
-

@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "407553345842",
+    "firebase_url": "https://recipeapp-e4fdc-default-rtdb.asia-southeast1.firebasedatabase.app",
     "project_id": "recipeapp-e4fdc",
     "storage_bucket": "recipeapp-e4fdc.firebasestorage.app"
   },
@@ -12,7 +13,12 @@
           "package_name": "com.example.flutter_app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "407553345842-mtr91254vicil12kft0h6vouebh263rm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDqhxLkH_ypGToQti2eEdMoTvYMxUerhTc"
@@ -20,7 +26,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "407553345842-mtr91254vicil12kft0h6vouebh263rm.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "407553345842-uehck3rhbc32kbnvr404mpnjn58irtp6.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.flutterApp"
+              }
+            }
+          ]
         }
       }
     }
