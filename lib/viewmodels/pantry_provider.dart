@@ -31,8 +31,8 @@ class PantryNotifier extends StateNotifier<Set<String>> {
 
 final selectedIngredientsProvider =
     StateNotifierProvider<PantryNotifier, Set<String>>(
-  (ref) => PantryNotifier(),
-);
+      (ref) => PantryNotifier(),
+    );
 
 // ===========================================================================
 // RecipeMatch: kết quả gợi ý kèm điểm số
@@ -59,16 +59,18 @@ final smartPantryProvider = Provider<List<RecipeMatch>>((ref) {
   // Lowercase toàn bộ để so sánh không phân biệt hoa thường
   final selectedLower = selected.map((s) => s.toLowerCase()).toSet();
 
+  // Trong smartPantryProvider
   final matches = <RecipeMatch>[];
 
   for (final recipe in recipes) {
     int matchCount = 0;
     for (final ingredient in recipe.ingredients) {
-      if (selectedLower.contains(ingredient.name.toLowerCase())) {
+      if (selectedLower.any((s) => ingredient.name.toLowerCase().contains(s))) {
         matchCount++;
       }
     }
-    if (matchCount > 0) {
+
+    if (matchCount >= 1) {
       matches.add(RecipeMatch(recipe, matchCount, recipe.ingredients.length));
     }
   }
