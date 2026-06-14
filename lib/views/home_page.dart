@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shimmer/shimmer.dart';
+import '../viewmodels/contact_provider.dart';
 import '../viewmodels/recipe_provider.dart';
 import '../widgets/large_recipe_card.dart';
 import '../widgets/small_recipe_card.dart';
@@ -168,18 +169,22 @@ class HomePage extends ConsumerWidget {
 // ===========================================================================
 // CONTACT SECTION — Layout từ Figma Home: Title + form liên hệ + footer links
 // ===========================================================================
-class _ContactSection extends StatefulWidget {
+// Nhớ đổi thành ConsumerStatefulWidget
+// ===========================================================================
+// CONTACT SECTION — Được refactor hoàn chỉnh bằng Riverpod ConsumerState
+// ===========================================================================
+class _ContactSection extends ConsumerStatefulWidget {
   const _ContactSection();
+
   @override
-  State<_ContactSection> createState() => _ContactSectionState();
+  ConsumerState<_ContactSection> createState() => _ContactSectionState();
 }
 
-class _ContactSectionState extends State<_ContactSection> {
+class _ContactSectionState extends ConsumerState<_ContactSection> {
   final _nameCtrl = TextEditingController();
   final _surnameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _messageCtrl = TextEditingController();
-  bool _submitted = false;
 
   @override
   void dispose() {
@@ -191,20 +196,21 @@ class _ContactSectionState extends State<_ContactSection> {
   }
 
   void _submit() {
-    if (_nameCtrl.text.isEmpty || _emailCtrl.text.isEmpty) return;
-    setState(() => _submitted = true);
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) setState(() => _submitted = false);
-    });
+    ref
+        .read(contactFormProvider.notifier)
+        .submitContact(_nameCtrl.text, _emailCtrl.text, _messageCtrl.text);
   }
 
   @override
   Widget build(BuildContext context) {
+    final formState = ref.watch(contactFormProvider);
+    final isSuccess = formState == ContactFormState.success;
+    final isLoading = formState == ContactFormState.loading;
+
     return Container(
       margin: const EdgeInsets.fromLTRB(20, 32, 20, 0),
       child: Column(
         children: [
-          // ---- TITLE + SUBTITLE — giống Figma ----
           const Text(
             'Liên hệ với chúng tôi',
             textAlign: TextAlign.center,
@@ -230,23 +236,24 @@ class _ContactSectionState extends State<_ContactSection> {
               borderRadius: AppTheme.radiusL,
               boxShadow: AppTheme.softShadow,
             ),
-            child: _submitted ? _buildSuccessState() : _buildFormFields(),
+            child: isSuccess
+                ? _buildSuccessState()
+                : _buildFormFields(isLoading),
           ),
 
           const SizedBox(height: 32),
 
-          // ---- FOOTER — logo + social icons + thông tin nhóm ----
+          // ---- FOOTER ----
           _buildFooter(),
         ],
       ),
     );
   }
 
-  Widget _buildFormFields() {
+  Widget _buildFormFields(bool isLoading) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Name + Surname — 2 cột giống Figma
         Row(
           children: [
             Expanded(child: _field(_nameCtrl, 'Họ', 'Nguyễn')),
@@ -262,31 +269,38 @@ class _ContactSectionState extends State<_ContactSection> {
           type: TextInputType.emailAddress,
         ),
         const SizedBox(height: 12),
-        // Message — multi-line
         TextField(
           controller: _messageCtrl,
           maxLines: 4,
           decoration: _deco('Lời nhắn', 'Nhập nội dung...'),
         ),
         const SizedBox(height: 20),
-        // Submit button — đen như Figma nhưng dùng cam cho nhất quán app
         SizedBox(
           height: 52,
           child: ElevatedButton(
-            onPressed: _submit,
+            onPressed: isLoading ? null : _submit,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.textDark,
               shape: RoundedRectangleBorder(borderRadius: AppTheme.radiusM),
               elevation: 0,
             ),
-            child: const Text(
-              'Gửi',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            child: isLoading
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2.5,
+                    ),
+                  )
+                : const Text(
+                    'Gửi',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
           ),
         ),
       ],
@@ -320,7 +334,6 @@ class _ContactSectionState extends State<_ContactSection> {
       children: [
         Divider(color: Colors.grey.shade200, thickness: 1),
         const SizedBox(height: 20),
-        // Logo + tên trường
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -349,7 +362,6 @@ class _ContactSectionState extends State<_ContactSection> {
           ],
         ),
         const SizedBox(height: 16),
-        // Social icons row — giống Figma footer
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -363,7 +375,6 @@ class _ContactSectionState extends State<_ContactSection> {
           ],
         ),
         const SizedBox(height: 20),
-        // 2 cột links — Use cases & Resources (giống Figma footer)
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

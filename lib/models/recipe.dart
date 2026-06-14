@@ -41,27 +41,24 @@ class Recipe {
     this.isPublic = true,
     this.searchKeywords = const [],
   });
-
-  // HÀM TẠO TỪ KHÓA TỰ ĐỘNG
-  // Ví dụ: "Gà Kho" -> ["g", "gà", "k", "kh", "kho", "gà kho"]
+  // HÀM TẠO TỪ KHÓA TỰ ĐỘNG (Đã tối ưu để scale database)
   static List<String> _generateKeywords(String title) {
-    List<String> keywords = [];
     String lowerCaseText = title.toLowerCase().trim();
+    List<String> keywords = [];
 
-    // Tạo prefix cho toàn bộ chuỗi
-    for (int i = 1; i <= lowerCaseText.length; i++) {
+    // 1. Tách từng từ độc lập (để gõ "kho" vẫn ra "gà kho")
+    List<String> words = lowerCaseText.split(RegExp(r'\s+'));
+    keywords.addAll(words);
+
+    // 2. Tạo prefix cho toàn bộ chuỗi (Giới hạn tối đa 15 ký tự)
+    // Tránh spam database với những tên món ăn quá dài
+    int maxPrefixLength = lowerCaseText.length > 15 ? 15 : lowerCaseText.length;
+    for (int i = 1; i <= maxPrefixLength; i++) {
       keywords.add(lowerCaseText.substring(0, i));
     }
-    // Tạo prefix cho từng từ riêng lẻ (để gõ "Kho" vẫn ra "Gà Kho")
-    List<String> words = lowerCaseText.split(' ');
-    for (String word in words) {
-      if (word.isNotEmpty) {
-        for (int i = 1; i <= word.length; i++) {
-          keywords.add(word.substring(0, i));
-        }
-      }
-    }
-    return keywords.toSet().toList(); // Xóa các phần tử trùng lặp
+
+    // 3. Xóa các phần tử trùng lặp và loại bỏ các chuỗi rỗng
+    return keywords.where((k) => k.isNotEmpty).toSet().toList();
   }
 
   // =================================================================

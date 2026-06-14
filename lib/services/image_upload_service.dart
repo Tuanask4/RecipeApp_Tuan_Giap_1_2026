@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
 class ImageUploadService {
-  final String _apiKey = 'c3363fd59745cbd9dca650a941e3a6a7';
+  final String _apiKey = 'bb177b6e74e753c91a9a8768b09132da';
 
   Future<String?> uploadRecipeImage(XFile imageFile, String userId) async {
     try {

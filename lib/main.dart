@@ -47,8 +47,8 @@ class AuthGate extends ConsumerWidget {
     return authState.when(
       // Đang kiểm tra trạng thái Auth lần đầu (cold start)
       loading: () => const Scaffold(
-        backgroundColor: Color(0xFFFAFAFA),
-        body: Center(child: CircularProgressIndicator(color: Colors.orange)),
+        backgroundColor: AppTheme.background,
+        body: Center(child: CircularProgressIndicator(color: AppTheme.primary)),
       ),
 
       // Lỗi Firebase (hiếm gặp)

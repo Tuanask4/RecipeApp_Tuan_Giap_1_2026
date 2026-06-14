@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/recipe.dart';
 import '../core/app_theme.dart';
 import '../viewmodels/auth_provider.dart';
+import '../viewmodels/recipe_provider.dart'; // THÊM IMPORT NÀY
 import '../widgets/app_cached_image.dart';
 import 'recipe_form_page.dart';
 
@@ -32,7 +33,8 @@ class _RecipeDetailPageState extends ConsumerState<RecipeDetailPage> {
   bool get _isOwner {
     final uid = ref.read(currentUserProvider)?.uid;
     // Fallback: nếu recipe cũ chưa có authorId thì không ai được sửa/xóa
-    return uid != null && widget.recipe.authorId.isNotEmpty &&
+    return uid != null &&
+        widget.recipe.authorId.isNotEmpty &&
         uid == widget.recipe.authorId;
   }
 
@@ -53,14 +55,18 @@ class _RecipeDetailPageState extends ConsumerState<RecipeDetailPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Hủy',
-                style: TextStyle(color: AppTheme.textLight)),
+            child: const Text(
+              'Hủy',
+              style: TextStyle(color: AppTheme.textLight),
+            ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppTheme.error),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Xóa ngay',
-                style: TextStyle(color: Colors.white)),
+            child: const Text(
+              'Xóa ngay',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),
@@ -102,7 +108,20 @@ class _RecipeDetailPageState extends ConsumerState<RecipeDetailPage> {
   // ===========================================================================
   @override
   Widget build(BuildContext context) {
-    final double multiplier = _currentServings / widget.recipe.defaultServings;
+    // ---- LOGIC MỚI: Lắng nghe Realtime ----
+    final recipesAsync = ref.watch(recipeListProvider);
+
+    final currentRecipe = recipesAsync.maybeWhen(
+      data: (recipes) => recipes.firstWhere(
+        (r) => r.id == widget.recipe.id,
+        orElse: () => widget.recipe,
+      ),
+      orElse: () => widget.recipe,
+    );
+    // ---------------------------------------
+
+    // Đổi widget.recipe.defaultServings thành currentRecipe.defaultServings
+    final double multiplier = _currentServings / currentRecipe.defaultServings;
 
     return Scaffold(
       backgroundColor: AppTheme.background,
@@ -119,10 +138,6 @@ class _RecipeDetailPageState extends ConsumerState<RecipeDetailPage> {
             backgroundColor: AppTheme.background,
             iconTheme: const IconThemeData(color: Colors.white),
 
-            // ===========================================================
-            // FIX: Nút Sửa và Xóa ở đây — chỉ hiện khi là owner
-            // Không còn nút Edit lạc trong delete dialog nữa
-            // ===========================================================
             actions: _isOwner
                 ? [
                     // Nút Sửa
@@ -132,9 +147,9 @@ class _RecipeDetailPageState extends ConsumerState<RecipeDetailPage> {
                       onPressed: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => RecipeFormPage(
-                            existingRecipe: widget.recipe,
-                          ),
+                          // Truyền currentRecipe để khi sửa nó lấy data mới nhất
+                          builder: (_) =>
+                              RecipeFormPage(existingRecipe: currentRecipe),
                         ),
                       ),
                     ),
@@ -151,7 +166,7 @@ class _RecipeDetailPageState extends ConsumerState<RecipeDetailPage> {
             flexibleSpace: FlexibleSpaceBar(
               stretchModes: const [StretchMode.zoomBackground],
               title: Text(
-                widget.recipe.title,
+                currentRecipe.title, // Thay widget.recipe bằng currentRecipe
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -162,7 +177,8 @@ class _RecipeDetailPageState extends ConsumerState<RecipeDetailPage> {
                 fit: StackFit.expand,
                 children: [
                   AppCachedImage(
-                    imageUrl: widget.recipe.imageUrl,
+                    imageUrl: currentRecipe
+                        .imageUrl, // Thay widget.recipe bằng currentRecipe
                     fit: BoxFit.cover,
                   ),
                   const DecoratedBox(
@@ -186,18 +202,18 @@ class _RecipeDetailPageState extends ConsumerState<RecipeDetailPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // ---- Tác giả ----
-                  if (widget.recipe.authorName.isNotEmpty &&
-                      widget.recipe.authorName != 'Ẩn danh')
+                  if (currentRecipe.authorName.isNotEmpty &&
+                      currentRecipe.authorName != 'Ẩn danh')
                     Padding(
                       padding: const EdgeInsets.only(bottom: 20),
                       child: Row(
                         children: [
                           CircleAvatar(
                             radius: 14,
-                            backgroundColor:
-                                AppTheme.primary.withOpacity(0.15),
+                            backgroundColor: AppTheme.primary.withOpacity(0.15),
                             child: Text(
-                              widget.recipe.authorName[0].toUpperCase(),
+                              currentRecipe.authorName[0]
+                                  .toUpperCase(), // Thay thế
                               style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
@@ -207,17 +223,18 @@ class _RecipeDetailPageState extends ConsumerState<RecipeDetailPage> {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            widget.recipe.authorName,
+                            currentRecipe.authorName, // Thay thế
                             style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
                               color: AppTheme.textDark,
                             ),
                           ),
-                          if (widget.recipe.createdAt != null) ...[
+                          if (currentRecipe.createdAt != null) ...[
+                            // Thay thế
                             const SizedBox(width: 8),
                             Text(
-                              _formatDate(widget.recipe.createdAt!),
+                              _formatDate(currentRecipe.createdAt!), // Thay thế
                               style: AppTheme.bodyText,
                             ),
                           ],
@@ -232,7 +249,9 @@ class _RecipeDetailPageState extends ConsumerState<RecipeDetailPage> {
                       const Text('Nguyên liệu', style: AppTheme.heading2),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 4, vertical: 2),
+                          horizontal: 4,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: AppTheme.primary.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(30),
@@ -245,8 +264,7 @@ class _RecipeDetailPageState extends ConsumerState<RecipeDetailPage> {
                                   ? AppTheme.primary
                                   : AppTheme.textLight,
                               onPressed: _currentServings > 1
-                                  ? () =>
-                                      setState(() => _currentServings--)
+                                  ? () => setState(() => _currentServings--)
                                   : null,
                             ),
                             Text(
@@ -269,11 +287,14 @@ class _RecipeDetailPageState extends ConsumerState<RecipeDetailPage> {
                   ),
                   const SizedBox(height: 16),
 
-                  ...widget.recipe.ingredients.map((ingredient) {
-                    final dynamicIngredient =
-                        ingredient.copyWithMultiplier(multiplier);
-                    final isChecked =
-                        _checkedIngredients.contains(ingredient.id);
+                  ...currentRecipe.ingredients.map((ingredient) {
+                    // Thay thế
+                    final dynamicIngredient = ingredient.copyWithMultiplier(
+                      multiplier,
+                    );
+                    final isChecked = _checkedIngredients.contains(
+                      ingredient.id,
+                    );
 
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12.0),
@@ -337,7 +358,8 @@ class _RecipeDetailPageState extends ConsumerState<RecipeDetailPage> {
                   const Text('Cách làm', style: AppTheme.heading2),
                   const SizedBox(height: 16),
 
-                  ...widget.recipe.steps.asMap().entries.map((entry) {
+                  ...currentRecipe.steps.asMap().entries.map((entry) {
+                    // Thay thế
                     int idx = entry.key;
                     String step = entry.value;
                     bool isDone = _completedSteps.contains(idx);
@@ -367,8 +389,11 @@ class _RecipeDetailPageState extends ConsumerState<RecipeDetailPage> {
                                     : AppTheme.primary,
                               ),
                               child: isDone
-                                  ? const Icon(Icons.done,
-                                      color: Colors.white, size: 16)
+                                  ? const Icon(
+                                      Icons.done,
+                                      color: Colors.white,
+                                      size: 16,
+                                    )
                                   : Text(
                                       '${idx + 1}',
                                       style: const TextStyle(
