@@ -27,7 +27,9 @@ Dự án tuân thủ nghiêm ngặt **Kiến trúc MVVM** nhằm đảm bảo t�
 ## 🎯 Câu chuyện người dùng (User Stories)
 Dự án được phân tích và phát triển dựa trên các nhu cầu thực tế của người dùng:
 
-* **US01 - Quản lý Công thức:** "Là một người yêu nấu ăn, tôi muốn tạo, tải ảnh lên và chỉnh sửa công thức của riêng mình để có thể lưu trữ và chia sẻ với cộng đồng."
+* **US01a - Quản lý Công thức:** "Là một người yêu nấu ăn, tôi muốn tạo công thức của riêng mình để có thể lưu trữ và chia sẻ với cộng đồng."
+* **US01b - Quản lý Công thức:** "Là một người yêu nấu ăn, tôi muốn tải hình ảnh món ăn của riêng mình để có thể lưu trữ và chia sẻ với cộng đồng."
+* **US01c - Quản lý Công thức:** "Là một người yêu nấu ăn, tôi muốn tạo chỉnh sửa công thức nấu ăn của riêng mình để có thể lưu trữ và chia sẻ với cộng đồng."
 * **US02 - Tủ lạnh thông minh (Smart Pantry):** "Là một sinh viên hoặc người đi làm bận rộn, tôi muốn đánh dấu những nguyên liệu tôi đang có sẵn trong tủ lạnh, để hệ thống tự động gợi ý những món tôi có thể nấu ngay lập tức mà không cần đi siêu thị."
 * **US03 - Tìm kiếm & Khám phá:** "Là một người dùng đang tìm cảm hứng, tôi muốn tìm kiếm công thức theo tên hoặc từ khóa, để nhanh chóng có được hướng dẫn chi tiết về nguyên liệu và các bước làm."
 * **US04 - Tùy chỉnh khẩu phần:** "Là người nấu ăn cho gia đình, tôi muốn thay đổi số lượng người ăn trên ứng dụng để định lượng nguyên liệu tự động nhân lên tương ứng mà tôi không cần phải tự tính nhẩm."
@@ -37,7 +39,7 @@ Dự án được phân tích và phát triển dựa trên các nhu cầu thự
 ## 🎨 Thiết kế Giao diện (UI/UX Mockup)
 Giao diện ứng dụng được thiết kế theo ngôn ngữ hiện đại, tối giản và tập trung vào hình ảnh trực quan của món ăn.
 
-
+Link Figma: https://www.figma.com/design/MBysYvniPYg7E4CYpX2RDn/Flow-of-work?node-id=0-1&t=SVP39zctsGJfLW6q-1
 
 ---
 
