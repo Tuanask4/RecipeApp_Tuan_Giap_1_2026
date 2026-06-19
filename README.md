@@ -7,7 +7,7 @@ Một ứng dụng di động đa nền tảng được xây dựng nhằm kết
 ## 👨‍💻 Đội ngũ phát triển (Phenikaa University)
 * **Nguyễn Minh Tuấn** (MSSV: 22010478)
 * **Nguyễn Công Giáp** (MSSV: 22010369)
-
+* Link demo: "https://youtu.be/nkCC6EIa-zA"
 ---
 
 ## 🛠 Công nghệ sử dụng (Tech Stack)
